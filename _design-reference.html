@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CANVS — The Artist's Space</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #c9a96e;
+    --gold-light: #e0c48a;
+    --gold-pale: #f5e8cc;
+    --bg: #0d0c0a;
+    --bg2: #131210;
+    --bg3: #1a1814;
+    --bg4: #211f1b;
+    --text: #f0ede6;
+    --text2: rgba(240,237,230,0.6);
+    --text3: rgba(240,237,230,0.35);
+    --border: rgba(240,237,230,0.08);
+    --border2: rgba(240,237,230,0.15);
+    --teal: #7a9e87;
+    --blue: #4a7a9b;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --mono: 'DM Mono', monospace;
+    --transition: all 0.3s ease;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--serif);
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  /* ─── PAGES ─── */
+  .page { display: none; min-height: 100vh; animation: fadeIn 0.5s ease; }
+  .page.active { display: block; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes shimmer { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 48px;
+    background: rgba(13,12,10,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 0.5px solid var(--border);
+    transition: var(--transition);
+  }
+
+  .nav-logo {
+    font-family: var(--mono); font-size: 16px; font-weight: 400;
+    letter-spacing: 0.4em; color: var(--text); cursor: pointer;
+    text-decoration: none;
+  }
+
+  .nav-links { display: flex; gap: 32px; list-style: none; align-items: center; }
+  .nav-links li a, .nav-links li button {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em;
+    color: var(--text3); text-decoration: none; text-transform: uppercase;
+    background: none; border: none; cursor: pointer;
+    transition: color 0.25s;
+  }
+  .nav-links li a:hover, .nav-links li button:hover,
+  .nav-links li a.active, .nav-links li button.active { color: var(--text); }
+
+  .nav-cta {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase; padding: 10px 22px;
+    background: var(--gold); color: var(--bg);
+    border: none; cursor: pointer; transition: background 0.25s;
+  }
+  .nav-cta:hover { background: var(--gold-light); }
+
+  .nav-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--gold); color: var(--bg);
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; border: 1.5px solid var(--gold);
+  }
+
+  /* ─── BUTTONS ─── */
+  .btn-primary {
+    background: var(--gold); color: var(--bg);
+    border: none; padding: 14px 36px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em;
+    text-transform: uppercase; cursor: pointer; transition: background 0.25s;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: var(--gold-light); }
+
+  .btn-ghost {
+    background: transparent; color: var(--text2);
+    border: 0.5px solid var(--border2); padding: 14px 36px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em;
+    text-transform: uppercase; cursor: pointer; transition: var(--transition);
+    display: inline-block;
+  }
+  .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+
+  .btn-outline-gold {
+    background: transparent; color: var(--gold);
+    border: 0.5px solid var(--gold); padding: 12px 28px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase; cursor: pointer; transition: var(--transition);
+  }
+  .btn-outline-gold:hover { background: var(--gold); color: var(--bg); }
+
+  /* ─── SECTION HEADER ─── */
+  .section-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.28em;
+    color: var(--text3); text-transform: uppercase;
+    display: flex; align-items: center; gap: 20px; margin-bottom: 56px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 0.5px; background: var(--border); }
+
+  /* ─── DIVIDER ─── */
+  .divider { height: 0.5px; background: var(--border); }
+
+  /* ─────────────────────────────────────
+     PAGE: LANDING
+  ───────────────────────────────────── */
+  #page-landing { background: var(--bg); }
+
+  /* Hero */
+  .hero {
+    min-height: 100vh;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0; padding-top: 80px;
+    position: relative; overflow: hidden;
+  }
+
+  .hero-left {
+    padding: 100px 48px 80px;
+    display: flex; flex-direction: column; justify-content: center;
+    position: relative; z-index: 2;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.3em;
+    color: var(--gold); text-transform: uppercase; margin-bottom: 32px;
+    animation: slideUp 0.8s ease both;
+  }
+
+  .hero-h1 {
+    font-size: 88px; font-weight: 300; line-height: 0.95;
+    color: var(--text); margin-bottom: 36px;
+    animation: slideUp 0.8s 0.1s ease both;
+  }
+  .hero-h1 em { font-style: italic; color: var(--gold); }
+
+  .hero-desc {
+    font-size: 18px; font-weight: 300; line-height: 1.8;
+    color: var(--text2); max-width: 420px; margin-bottom: 48px;
+    animation: slideUp 0.8s 0.2s ease both;
+  }
+
+  .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; animation: slideUp 0.8s 0.3s ease both; }
+
+  .hero-stats {
+    display: flex; gap: 48px; margin-top: 64px;
+    animation: slideUp 0.8s 0.4s ease both;
+  }
+  .hero-stat-num {
+    font-size: 36px; font-weight: 300; color: var(--text);
+    display: block; line-height: 1;
+  }
+  .hero-stat-num em { font-style: italic; color: var(--gold); }
+  .hero-stat-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em;
+    color: var(--text3); text-transform: uppercase; margin-top: 6px;
+  }
+
+  .hero-right {
+    position: relative; overflow: hidden;
+    background: var(--bg2);
+  }
+
+  .hero-mosaic {
+    display: grid; grid-template-columns: 1fr 1fr;
+    grid-template-rows: 55% 45%;
+    height: 100%; gap: 3px;
+  }
+
+  .mosaic-cell {
+    position: relative; overflow: hidden;
+    background: var(--bg3);
+  }
+
+  .mosaic-cell:first-child { grid-row: span 2; }
+
+  .mosaic-art {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .mosaic-overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 20px 16px;
+    background: linear-gradient(transparent, rgba(13,12,10,0.95));
+  }
+  .mo-artist { font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em; color: var(--gold); text-transform: uppercase; }
+  .mo-title { font-size: 15px; font-weight: 300; color: var(--text); margin-top: 2px; }
+  .mo-price { font-family: var(--mono); font-size: 9px; color: var(--text3); margin-top: 4px; }
+
+  /* Features Strip */
+  .features-strip {
+    padding: 80px 48px;
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: 2px;
+  }
+
+  .feature-card {
+    padding: 48px 36px; background: var(--bg2);
+    border: 0.5px solid var(--border); transition: background 0.3s;
+    cursor: default;
+  }
+  .feature-card:hover { background: var(--bg3); }
+
+  .fc-num {
+    font-family: var(--mono); font-size: 11px; color: var(--gold);
+    margin-bottom: 28px;
+  }
+  .fc-title { font-size: 32px; font-weight: 300; line-height: 1.15; margin-bottom: 20px; }
+  .fc-title em { font-style: italic; color: var(--gold); }
+  .fc-body { font-size: 16px; font-weight: 300; line-height: 1.9; color: var(--text2); }
+
+  /* Exhibitions Teaser */
+  .shows-teaser { padding: 80px 48px; }
+  .show-row {
+    display: grid; grid-template-columns: 110px 1fr auto;
+    align-items: center; gap: 36px; padding: 28px 0;
+    border-bottom: 0.5px solid var(--border);
+    cursor: pointer; transition: padding-left 0.3s;
+  }
+  .show-row:hover { padding-left: 16px; }
+  .show-date { font-family: var(--mono); font-size: 10px; color: var(--text3); line-height: 1.6; }
+  .show-date span { display: block; font-family: var(--serif); font-size: 28px; font-weight: 300; color: var(--text2); }
+  .show-name { font-size: 22px; font-weight: 300; color: var(--text); margin-bottom: 4px; }
+  .show-meta { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 0.1em; }
+  .show-tag {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em;
+    text-transform: uppercase; padding: 7px 16px; border: 0.5px solid;
+  }
+  .tag-open { border-color: var(--gold); color: var(--gold); }
+  .tag-virtual { border-color: var(--teal); color: var(--teal); }
+  .tag-full { border-color: var(--border2); color: var(--text3); }
+
+  /* CTA Strip */
+  .cta-strip {
+    background: var(--gold); padding: 80px 48px; text-align: center;
+  }
+  .cta-strip h2 { font-family: var(--serif); font-size: 56px; font-weight: 300; color: var(--bg); margin-bottom: 16px; }
+  .cta-strip h2 em { font-style: italic; }
+  .cta-strip p { font-family: var(--mono); font-size: 11px; color: rgba(13,12,10,0.55); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 40px; }
+  .cta-btns { display: flex; gap: 16px; justify-content: center; }
+  .btn-dark { background: var(--bg); color: var(--gold); border: none; padding: 14px 36px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: opacity 0.25s; }
+  .btn-dark:hover { opacity: 0.85; }
+  .btn-outline-dark { background: transparent; color: var(--bg); border: 1px solid rgba(13,12,10,0.35); padding: 14px 36px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: var(--transition); }
+  .btn-outline-dark:hover { background: rgba(13,12,10,0.1); }
+
+  /* Footer */
+  footer {
+    padding: 36px 48px; display: flex; justify-content: space-between;
+    align-items: center; border-top: 0.5px solid var(--border);
+  }
+  footer p { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 0.1em; }
+
+  /* ─────────────────────────────────────
+     PAGE: ONBOARDING
+  ───────────────────────────────────── */
+  #page-onboard {
+    min-height: 100vh; display: grid; grid-template-columns: 45% 55%;
+  }
+
+  .onboard-left {
+    background: var(--bg2); position: sticky; top: 0; height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 80px 56px; border-right: 0.5px solid var(--border);
+    overflow: hidden;
+  }
+
+  .onboard-art-bg {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0.15;
+  }
+
+  .ob-logo { font-family: var(--mono); font-size: 16px; letter-spacing: 0.4em; color: var(--text); margin-bottom: 80px; position: relative; z-index: 1; }
+  .ob-headline { font-size: 52px; font-weight: 300; line-height: 1.1; color: var(--text); margin-bottom: 24px; position: relative; z-index: 1; }
+  .ob-headline em { font-style: italic; color: var(--gold); }
+  .ob-sub { font-size: 16px; font-weight: 300; color: var(--text2); line-height: 1.8; margin-bottom: 48px; position: relative; z-index: 1; }
+
+  .ob-steps { display: flex; flex-direction: column; gap: 20px; position: relative; z-index: 1; }
+  .ob-step { display: flex; align-items: center; gap: 16px; }
+  .ob-step-dot {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--border);
+    border: 0.5px solid var(--border2); display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 10px; color: var(--text3);
+    flex-shrink: 0; transition: var(--transition);
+  }
+  .ob-step-dot.done { background: var(--gold); border-color: var(--gold); color: var(--bg); }
+  .ob-step-dot.active { border-color: var(--gold); color: var(--gold); background: transparent; }
+  .ob-step-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; color: var(--text3); text-transform: uppercase; transition: color 0.25s; }
+  .ob-step-label.active { color: var(--text); }
+  .ob-step-label.done { color: var(--gold); }
+
+  .onboard-right {
+    padding: 120px 64px 80px;
+    display: flex; flex-direction: column; justify-content: center;
+    min-height: 100vh;
+  }
+
+  .ob-form { display: none; animation: slideUp 0.4s ease both; }
+  .ob-form.active { display: block; }
+
+  .ob-form-title { font-size: 40px; font-weight: 300; color: var(--text); margin-bottom: 8px; }
+  .ob-form-title em { font-style: italic; color: var(--gold); }
+  .ob-form-sub { font-size: 15px; font-weight: 300; color: var(--text2); margin-bottom: 48px; line-height: 1.7; }
+
+  .form-group { margin-bottom: 28px; }
+  .form-group label {
+    display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em;
+    color: var(--text3); text-transform: uppercase; margin-bottom: 10px;
+  }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; background: var(--bg2); border: 0.5px solid var(--border2);
+    color: var(--text); font-family: var(--serif); font-size: 16px; font-weight: 300;
+    padding: 14px 18px; outline: none; transition: border-color 0.25s;
+    appearance: none; -webkit-appearance: none;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--gold);
+  }
+  .form-group input::placeholder, .form-group textarea::placeholder { color: var(--text3); }
+  .form-group textarea { resize: vertical; min-height: 120px; }
+  .form-group select option { background: var(--bg2); color: var(--text); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  .role-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 36px; }
+  .role-card {
+    padding: 28px 24px; background: var(--bg2); border: 0.5px solid var(--border2);
+    cursor: pointer; transition: var(--transition); text-align: center;
+  }
+  .role-card:hover { border-color: var(--border2); background: var(--bg3); }
+  .role-card.selected { border-color: var(--gold); background: rgba(201,169,110,0.06); }
+  .role-icon { font-size: 28px; margin-bottom: 14px; }
+  .role-name { font-size: 20px; font-weight: 300; color: var(--text); margin-bottom: 6px; }
+  .role-desc { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 0.12em; line-height: 1.7; }
+
+  .medium-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+  .medium-tag {
+    padding: 8px 18px; border: 0.5px solid var(--border2); font-family: var(--mono);
+    font-size: 10px; letter-spacing: 0.12em; color: var(--text3); cursor: pointer;
+    transition: var(--transition); text-transform: uppercase;
+  }
+  .medium-tag:hover { border-color: var(--gold); color: var(--gold); }
+  .medium-tag.selected { border-color: var(--gold); color: var(--gold); background: rgba(201,169,110,0.08); }
+
+  .upload-zone {
+    border: 0.5px dashed var(--border2); padding: 48px; text-align: center;
+    cursor: pointer; transition: var(--transition); background: var(--bg2);
+  }
+  .upload-zone:hover { border-color: var(--gold); background: var(--bg3); }
+  .upload-icon { font-size: 32px; margin-bottom: 16px; opacity: 0.4; }
+  .upload-text { font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; color: var(--text3); text-transform: uppercase; }
+  .upload-sub { font-size: 13px; font-weight: 300; color: var(--text3); margin-top: 8px; }
+
+  .social-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .social-prefix { font-family: var(--mono); font-size: 12px; color: var(--text3); white-space: nowrap; }
+  .social-row input { flex: 1; }
+
+  .form-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 48px; }
+  .progress-bar { width: 100%; height: 1px; background: var(--border); margin-bottom: 48px; position: relative; }
+  .progress-fill { height: 100%; background: var(--gold); transition: width 0.4s ease; }
+
+  .ob-success {
+    text-align: center; padding: 40px 0;
+    display: none;
+    animation: slideUp 0.4s ease both;
+  }
+  .ob-success.active { display: block; }
+  .success-icon { font-size: 48px; margin-bottom: 28px; }
+  .success-title { font-size: 48px; font-weight: 300; color: var(--text); margin-bottom: 16px; }
+  .success-title em { font-style: italic; color: var(--gold); }
+  .success-sub { font-size: 18px; font-weight: 300; color: var(--text2); line-height: 1.8; margin-bottom: 40px; }
+
+  /* ─────────────────────────────────────
+     PAGE: GALLERY
+  ───────────────────────────────────── */
+  #page-gallery { padding-top: 80px; }
+
+  .gallery-header { padding: 60px 48px 40px; }
+  .gallery-h1 { font-size: 64px; font-weight: 300; margin-bottom: 8px; }
+  .gallery-h1 em { font-style: italic; color: var(--gold); }
+  .gallery-sub { font-size: 18px; font-weight: 300; color: var(--text2); margin-bottom: 40px; }
+
+  .gallery-filters {
+    display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+  }
+  .filter-btn {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 9px 20px; background: transparent; border: 0.5px solid var(--border2);
+    color: var(--text3); cursor: pointer; transition: var(--transition);
+  }
+  .filter-btn:hover, .filter-btn.active { border-color: var(--gold); color: var(--gold); }
+  .filter-select {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+    background: var(--bg2); border: 0.5px solid var(--border2); color: var(--text2);
+    padding: 9px 20px; margin-left: auto; cursor: pointer; outline: none;
+    appearance: none;
+  }
+
+  .gallery-grid {
+    padding: 0 48px 80px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px;
+  }
+
+  .art-item {
+    position: relative; overflow: hidden; background: var(--bg2); cursor: pointer;
+    group: true;
+  }
+  .art-item:hover .art-item-overlay { opacity: 1; }
+
+  .art-item-img { width: 100%; display: block; }
+
+  .art-item-overlay {
+    position: absolute; inset: 0;
+    background: rgba(13,12,10,0.85);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 24px; opacity: 0; transition: opacity 0.3s;
+  }
+
+  .art-badge {
+    position: absolute; top: 16px; right: 16px;
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em;
+    padding: 5px 12px; text-transform: uppercase;
+  }
+  .badge-limited { background: var(--gold); color: var(--bg); }
+  .badge-sold { background: var(--bg4); color: var(--text3); border: 0.5px solid var(--border2); }
+
+  .ai-artist { font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em; color: var(--gold); text-transform: uppercase; margin-bottom: 4px; }
+  .ai-title { font-size: 20px; font-weight: 300; color: var(--text); margin-bottom: 4px; }
+  .ai-medium { font-family: var(--mono); font-size: 9px; color: var(--text3); margin-bottom: 16px; }
+  .ai-footer { display: flex; justify-content: space-between; align-items: center; }
+  .ai-price { font-size: 22px; font-weight: 300; color: var(--text); }
+  .ai-edition { font-family: var(--mono); font-size: 9px; color: var(--text3); }
+
+  /* ─────────────────────────────────────
+     PAGE: ARTIST PROFILE
+  ───────────────────────────────────── */
+  #page-profile { padding-top: 80px; }
+
+  .profile-hero {
+    display: grid; grid-template-columns: 1fr 1.4fr;
+    min-height: 70vh;
+  }
+
+  .profile-left {
+    padding: 60px 48px; border-right: 0.5px solid var(--border);
+    display: flex; flex-direction: column;
+  }
+
+  .profile-avatar {
+    width: 120px; height: 120px; border-radius: 50%;
+    background: var(--bg3); border: 2px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px; font-weight: 300; color: var(--gold);
+    font-family: var(--serif); margin-bottom: 32px;
+    font-style: italic;
+  }
+
+  .profile-verified {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em;
+    color: var(--gold); text-transform: uppercase; margin-bottom: 12px;
+  }
+  .profile-verified::before { content: '●'; font-size: 6px; animation: shimmer 2s infinite; }
+
+  .profile-name { font-size: 48px; font-weight: 300; color: var(--text); line-height: 1; margin-bottom: 8px; }
+  .profile-title { font-size: 18px; font-weight: 300; font-style: italic; color: var(--text2); margin-bottom: 32px; }
+
+  .profile-meta { display: flex; flex-direction: column; gap: 12px; margin-bottom: 36px; }
+  .profile-meta-row { display: flex; align-items: center; gap: 12px; }
+  .pm-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em; color: var(--text3); text-transform: uppercase; width: 80px; }
+  .pm-value { font-size: 15px; font-weight: 300; color: var(--text2); }
+
+  .profile-stats { display: flex; gap: 36px; padding: 28px 0; border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); margin-bottom: 36px; }
+  .pstat-num { font-size: 32px; font-weight: 300; color: var(--text); display: block; }
+  .pstat-num em { font-style: italic; color: var(--gold); }
+  .pstat-label { font-family: var(--mono); font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.15em; margin-top: 4px; }
+
+  .profile-bio { font-size: 16px; font-weight: 300; line-height: 1.9; color: var(--text2); margin-bottom: 36px; }
+
+  .profile-socials { display: flex; gap: 16px; flex-wrap: wrap; }
+  .social-link {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--text3); border: 0.5px solid var(--border2); padding: 8px 16px;
+    cursor: pointer; transition: var(--transition); text-decoration: none; display: inline-block;
+  }
+  .social-link:hover { border-color: var(--gold); color: var(--gold); }
+
+  .profile-right { padding: 60px 48px; }
+  .profile-tabs { display: flex; gap: 0; border-bottom: 0.5px solid var(--border); margin-bottom: 48px; }
+  .ptab {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    padding: 16px 28px; color: var(--text3); cursor: pointer; transition: color 0.25s;
+    border-bottom: 1.5px solid transparent; margin-bottom: -0.5px;
+  }
+  .ptab.active { color: var(--text); border-bottom-color: var(--gold); }
+
+  .profile-works { display: grid; grid-template-columns: repeat(2,1fr); gap: 3px; }
+  .pw-item { position: relative; overflow: hidden; cursor: pointer; background: var(--bg2); }
+  .pw-item:hover .pw-overlay { opacity: 1; }
+  .pw-overlay { position: absolute; inset: 0; background: rgba(13,12,10,0.8); opacity: 0; transition: opacity 0.3s; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; }
+  .pw-title { font-size: 18px; font-weight: 300; color: var(--text); margin-bottom: 4px; }
+  .pw-price { font-size: 20px; font-weight: 300; color: var(--gold); }
+
+  /* ─────────────────────────────────────
+     PAGE: EXHIBITIONS
+  ───────────────────────────────────── */
+  #page-exhibitions { padding-top: 80px; }
+
+  .exh-header { padding: 60px 48px 48px; border-bottom: 0.5px solid var(--border); }
+  .exh-h1 { font-size: 64px; font-weight: 300; margin-bottom: 8px; }
+  .exh-h1 em { font-style: italic; color: var(--gold); }
+  .exh-sub { font-size: 18px; font-weight: 300; color: var(--text2); margin-bottom: 40px; }
+  .exh-filters { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .exh-body { display: grid; grid-template-columns: 1fr 340px; }
+
+  .exh-list { border-right: 0.5px solid var(--border); }
+
+  .exh-item {
+    padding: 36px 48px; border-bottom: 0.5px solid var(--border);
+    display: grid; grid-template-columns: 110px 1fr auto;
+    gap: 32px; align-items: start;
+    cursor: pointer; transition: background 0.25s;
+  }
+  .exh-item:hover { background: var(--bg2); }
+  .exh-item.featured { background: rgba(201,169,110,0.04); border-left: 2px solid var(--gold); padding-left: 46px; }
+
+  .exh-date-col { text-align: center; padding-top: 4px; }
+  .exh-month { font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; color: var(--text3); text-transform: uppercase; margin-bottom: 4px; }
+  .exh-day { font-size: 44px; font-weight: 300; color: var(--text2); line-height: 1; }
+
+  .exh-info {}
+  .exh-tag-row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .exh-cat {
+    font-family: var(--mono); font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 4px 12px; border: 0.5px solid;
+  }
+  .cat-group { border-color: var(--blue); color: var(--blue); }
+  .cat-solo { border-color: var(--gold); color: var(--gold); }
+  .cat-virtual { border-color: var(--teal); color: var(--teal); }
+  .cat-fair { border-color: rgba(240,237,230,0.3); color: var(--text3); }
+
+  .exh-title { font-size: 24px; font-weight: 300; color: var(--text); margin-bottom: 8px; }
+  .exh-venue { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 0.1em; margin-bottom: 12px; }
+  .exh-artists-list { font-size: 14px; font-weight: 300; color: var(--text2); font-style: italic; }
+
+  .exh-action { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+  .exh-price { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+
+  /* Sidebar */
+  .exh-sidebar { padding: 40px 32px; }
+  .exh-sb-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--text3); text-transform: uppercase; margin-bottom: 28px; border-bottom: 0.5px solid var(--border); padding-bottom: 16px; }
+
+  .submit-box { background: var(--bg2); border: 0.5px solid var(--border); padding: 28px; margin-bottom: 32px; }
+  .sb-h3 { font-size: 22px; font-weight: 300; margin-bottom: 8px; }
+  .sb-h3 em { font-style: italic; color: var(--gold); }
+  .sb-body { font-size: 14px; font-weight: 300; color: var(--text2); line-height: 1.8; margin-bottom: 20px; }
+
+  .filter-group { margin-bottom: 24px; }
+  .fg-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; color: var(--text3); text-transform: uppercase; margin-bottom: 12px; }
+  .fg-options { display: flex; flex-direction: column; gap: 8px; }
+  .fg-opt {
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
+    font-size: 15px; font-weight: 300; color: var(--text2); padding: 4px 0;
+    transition: color 0.25s;
+  }
+  .fg-opt:hover { color: var(--text); }
+  .fg-check {
+    width: 16px; height: 16px; border: 0.5px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: var(--gold);
+  }
+
+  /* ─────────────────────────────────────
+     RESPONSIVE + MISC
+  ───────────────────────────────────── */
+  .mt-8 { margin-top: 8px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-24 { margin-top: 24px; }
+  .mr-auto { margin-right: auto; }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ NAV ═══════════════════ -->
+<nav id="main-nav">
+  <a class="nav-logo" onclick="showPage('landing')">CANVS</a>
+  <ul class="nav-links" id="nav-links-guest">
+    <li><a onclick="showPage('gallery')" id="nl-gallery">Gallery</a></li>
+    <li><a onclick="showPage('profile')" id="nl-artists">Artists</a></li>
+    <li><a onclick="showPage('exhibitions')" id="nl-exhibitions">Exhibitions</a></li>
+    <li><button class="nav-cta" onclick="showPage('onboard')">Join Canvs</button></li>
+  </ul>
+  <ul class="nav-links hidden" id="nav-links-auth">
+    <li><a onclick="showPage('gallery')">Gallery</a></li>
+    <li><a onclick="showPage('profile')">My Profile</a></li>
+    <li><a onclick="showPage('exhibitions')">Exhibitions</a></li>
+    <li><div class="nav-avatar" id="nav-avatar" onclick="showPage('profile')">A</div></li>
+  </ul>
+</nav>
+
+
+<!-- ══════════════════════════════════════
+     PAGE 1: LANDING
+══════════════════════════════════════ -->
+<div id="page-landing" class="page active">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-left">
+      <p class="hero-eyebrow">The Artist's Space</p>
+      <h1 class="hero-h1">Art<br/>finds<br/>its <em>home.</em></h1>
+      <p class="hero-desc">A living gallery where artists exhibit and sell limited editions — and art lovers never miss a show again.</p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="showPage('onboard')">Join as Artist</button>
+        <button class="btn-ghost" onclick="showPage('gallery')">Browse Gallery</button>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <span class="hero-stat-num">2<em>,</em>400</span>
+          <p class="hero-stat-label">Works Listed</p>
+        </div>
+        <div>
+          <span class="hero-stat-num">340<em>+</em></span>
+          <p class="hero-stat-label">Artists</p>
+        </div>
+        <div>
+          <span class="hero-stat-num">92<em>%</em></span>
+          <p class="hero-stat-label">Editions Sold</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="hero-mosaic">
+        <!-- Large left cell -->
+        <div class="mosaic-cell">
+          <div class="mosaic-art">
+            <svg width="100%" height="100%" viewBox="0 0 300 580" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+              <rect width="300" height="580" fill="#1a1612"/>
+              <ellipse cx="150" cy="260" rx="110" ry="150" fill="#3a2510" opacity="0.7"/>
+              <ellipse cx="120" cy="220" rx="70" ry="95" fill="#c9a96e" opacity="0.18"/>
+              <circle cx="170" cy="190" r="55" fill="#7a3e22" opacity="0.5"/>
+              <path d="M40 400 Q150 300 260 380" stroke="#c9a96e" stroke-width="0.8" fill="none" opacity="0.3"/>
+              <path d="M80 80 L80 500" stroke="rgba(240,237,230,0.06)" stroke-width="0.5"/>
+              <path d="M220 60 L220 520" stroke="rgba(240,237,230,0.06)" stroke-width="0.5"/>
+              <rect x="20" y="20" width="260" height="540" fill="none" stroke="rgba(201,169,110,0.1)" stroke-width="0.5"/>
+              <ellipse cx="150" cy="400" rx="60" ry="30" fill="#1e1208" opacity="0.8"/>
+              <circle cx="90" cy="160" r="18" fill="#c9a96e" opacity="0.08"/>
+            </svg>
+          </div>
+          <div class="mosaic-overlay">
+            <div class="mo-artist">Amara Osei</div>
+            <div class="mo-title">Vessel No. 7</div>
+            <div class="mo-price">Edition 2/5 · ₦280,000</div>
+          </div>
+        </div>
+        <!-- Top right -->
+        <div class="mosaic-cell">
+          <div class="mosaic-art">
+            <svg width="100%" height="100%" viewBox="0 0 280 280" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+              <rect width="280" height="280" fill="#161a1e"/>
+              <rect x="0" y="80" width="280" height="120" fill="#1d2a38" opacity="0.7"/>
+              <circle cx="140" cy="140" r="80" fill="none" stroke="#4a7a9b" stroke-width="0.6" opacity="0.5"/>
+              <circle cx="140" cy="140" r="55" fill="none" stroke="#4a7a9b" stroke-width="0.6" opacity="0.35"/>
+              <circle cx="140" cy="140" r="30" fill="#4a7a9b" opacity="0.12"/>
+              <line x1="0" y1="140" x2="280" y2="140" stroke="rgba(74,122,155,0.2)" stroke-width="0.5"/>
+              <line x1="140" y1="0" x2="140" y2="280" stroke="rgba(74,122,155,0.2)" stroke-width="0.5"/>
+            </svg>
+          </div>
+          <div class="mosaic-overlay">
+            <div class="mo-artist">Temi Alade</div>
+            <div class="mo-title">Still Waters III</div>
+            <div class="mo-price">Edition 1/3 · ₦95,000</div>
+          </div>
+        </div>
+        <!-- Bottom right -->
+        <div class="mosaic-cell">
+          <div class="mosaic-art">
+            <svg width="100%" height="100%" viewBox="0 0 280 240" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+              <rect width="280" height="240" fill="#1a1310"/>
+              <polygon points="140,20 250,210 30,210" fill="#7a2e1a" opacity="0.45"/>
+              <polygon points="90,50 210,50 240,220 50,220" fill="none" stroke="#c9a96e" stroke-width="0.5" opacity="0.35"/>
+              <circle cx="140" cy="145" r="38" fill="#c9a96e" opacity="0.1"/>
+              <line x1="140" y1="20" x2="140" y2="220" stroke="rgba(201,169,110,0.15)" stroke-width="0.5"/>
+              <rect x="110" y="115" width="60" height="60" fill="none" stroke="rgba(201,169,110,0.2)" stroke-width="0.5"/>
+            </svg>
+          </div>
+          <div class="mosaic-overlay">
+            <div class="mo-artist">Ife Bankole</div>
+            <div class="mo-title">Formation V</div>
+            <div class="mo-price">Edition 5/10 · ₦52,000</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- FEATURES -->
+  <section class="features-strip">
+    <div class="feature-card">
+      <div class="fc-num">01</div>
+      <div class="fc-title">Artist<br/><em>Profiles</em></div>
+      <div class="fc-body">Every artist gets a curated studio page — biography, medium, influences, and a gallery that feels like a private visit, not a product shelf.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-num">02</div>
+      <div class="fc-title">Limited<br/><em>Editions</em></div>
+      <div class="fc-body">Numbered works sold directly from artist to collector. No resellers, no 50% gallery cuts. Edition 1 of 5 — yours, provably authenticated.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-num">03</div>
+      <div class="fc-title">Exhibition<br/><em>Board</em></div>
+      <div class="fc-body">A live calendar of art shows, pop-ups, and virtual exhibitions across Africa and the diaspora. Never miss an opening again.</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- EXHIBITIONS TEASER -->
+  <section class="shows-teaser" style="padding: 80px 48px;">
+    <div class="section-label">Upcoming Exhibitions</div>
+    <div>
+      <div class="show-row" onclick="showPage('exhibitions')">
+        <div class="show-date"><span>14</span>Apr 2025</div>
+        <div><div class="show-name">Chromatics — A Group Exhibition</div><div class="show-meta">Terra Kulture · Victoria Island, Lagos</div></div>
+        <span class="show-tag tag-open">Open</span>
+      </div>
+      <div class="show-row" onclick="showPage('exhibitions')">
+        <div class="show-date"><span>22</span>Apr 2025</div>
+        <div><div class="show-name">Amara Osei — Solo: Vessels &amp; Voids</div><div class="show-meta">Thought Pyramid Art Centre · Abuja</div></div>
+        <span class="show-tag tag-open">Open</span>
+      </div>
+      <div class="show-row" onclick="showPage('exhibitions')">
+        <div class="show-date"><span>03</span>May 2025</div>
+        <div><div class="show-name">New Afrofuturism — Curated Drop</div><div class="show-meta">Canvs Virtual Gallery · Online</div></div>
+        <span class="show-tag tag-virtual">Virtual</span>
+      </div>
+      <div class="show-row" onclick="showPage('exhibitions')">
+        <div class="show-date"><span>18</span>May 2025</div>
+        <div><div class="show-name">Lagos Art Week — Group Show</div><div class="show-meta">LagosPhoto Festival Grounds · Onikan</div></div>
+        <span class="show-tag tag-full">Rsvp Full</span>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:48px;">
+      <button class="btn-ghost" onclick="showPage('exhibitions')">View All Exhibitions →</button>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-strip">
+    <h2>Your studio<br/><em>awaits.</em></h2>
+    <p>Invite-only beta — applications open now</p>
+    <div class="cta-btns">
+      <button class="btn-dark" onclick="showPage('onboard')">Apply as Artist</button>
+      <button class="btn-outline-dark" onclick="showPage('onboard')">I collect art</button>
+    </div>
+  </div>
+
+  <footer>
+    <div style="font-family:var(--mono);font-size:16px;letter-spacing:0.4em">CANVS</div>
+    <p>© 2025 Canvs Ltd. · Lagos &amp; Abuja</p>
+    <p>Where art lives.</p>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     PAGE 2: ONBOARDING
+══════════════════════════════════════ -->
+<div id="page-onboard" class="page">
+  <div id="page-onboarding" style="display:grid;grid-template-columns:45% 55%;min-height:100vh;">
+
+    <!-- Left panel -->
+    <div class="onboard-left">
+      <div class="onboard-art-bg">
+        <svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="200" cy="200" r="180" fill="none" stroke="#c9a96e" stroke-width="0.5"/>
+          <circle cx="200" cy="200" r="120" fill="none" stroke="#c9a96e" stroke-width="0.5"/>
+          <circle cx="200" cy="200" r="60" fill="none" stroke="#c9a96e" stroke-width="0.5"/>
+          <line x1="20" y1="200" x2="380" y2="200" stroke="#c9a96e" stroke-width="0.5"/>
+          <line x1="200" y1="20" x2="200" y2="380" stroke="#c9a96e" stroke-width="0.5"/>
+          <line x1="73" y1="73" x2="327" y2="327" stroke="#c9a96e" stroke-width="0.3" opacity="0.5"/>
+          <line x1="327" y1="73" x2="73" y2="327" stroke="#c9a96e" stroke-width="0.3" opacity="0.5"/>
+        </svg>
+      </div>
+      <div class="ob-logo">CANVS</div>
+      <h2 class="ob-headline">Join the<br/><em>canvas.</em></h2>
+      <p class="ob-sub">Set up your artist profile and start reaching collectors who care about original, authentic work.</p>
+
+      <div class="ob-steps">
+        <div class="ob-step">
+          <div class="ob-step-dot active" id="dot-1">1</div>
+          <div class="ob-step-label active" id="lbl-1">Choose your role</div>
+        </div>
+        <div class="ob-step">
+          <div class="ob-step-dot" id="dot-2">2</div>
+          <div class="ob-step-label" id="lbl-2">Your details</div>
+        </div>
+        <div class="ob-step">
+          <div class="ob-step-dot" id="dot-3">3</div>
+          <div class="ob-step-label" id="lbl-3">Artist identity</div>
+        </div>
+        <div class="ob-step">
+          <div class="ob-step-dot" id="dot-4">4</div>
+          <div class="ob-step-label" id="lbl-4">Upload works</div>
+        </div>
+        <div class="ob-step">
+          <div class="ob-step-dot" id="dot-5">5</div>
+          <div class="ob-step-label" id="lbl-5">Go live</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right panel -->
+    <div class="onboard-right">
+      <div class="progress-bar"><div class="progress-fill" id="ob-progress" style="width:20%"></div></div>
+
+      <!-- STEP 1: Role -->
+      <div class="ob-form active" id="ob-step-1">
+        <h2 class="ob-form-title">I am an<br/><em>artist.</em></h2>
+        <p class="ob-form-sub">Choose how you'll use Canvs. You can always add a second role later.</p>
+
+        <div class="role-selector">
+          <div class="role-card selected" id="role-artist" onclick="selectRole('artist')">
+            <div class="role-icon">🎨</div>
+            <div class="role-name">Artist</div>
+            <div class="role-desc">Exhibit &amp; sell<br/>your original works</div>
+          </div>
+          <div class="role-card" id="role-collector" onclick="selectRole('collector')">
+            <div class="role-icon">🖼️</div>
+            <div class="role-name">Collector</div>
+            <div class="role-desc">Discover &amp; acquire<br/>limited editions</div>
+          </div>
+          <div class="role-card" id="role-gallery" onclick="selectRole('gallery')">
+            <div class="role-icon">🏛️</div>
+            <div class="role-name">Gallery</div>
+            <div class="role-desc">List exhibitions &amp;<br/>represent artists</div>
+          </div>
+          <div class="role-card" id="role-lover" onclick="selectRole('lover')">
+            <div class="role-icon">❤️</div>
+            <div class="role-name">Art Lover</div>
+            <div class="role-desc">Follow artists &amp;<br/>attend shows</div>
+          </div>
+        </div>
+
+        <div class="form-nav">
+          <span style="font-family:var(--mono);font-size:10px;color:var(--text3)">Step 1 of 5</span>
+          <button class="btn-primary" onclick="goStep(2)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- STEP 2: Details -->
+      <div class="ob-form" id="ob-step-2">
+        <h2 class="ob-form-title">Your<br/><em>details.</em></h2>
+        <p class="ob-form-sub">Tell us a little about yourself to create your account.</p>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" placeholder="Amara" id="fn"/>
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" placeholder="Osei" id="ln"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" placeholder="amara@example.com"/>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" placeholder="Choose a strong password"/>
+        </div>
+        <div class="form-group">
+          <label>City / Country</label>
+          <input type="text" placeholder="Lagos, Nigeria"/>
+        </div>
+
+        <div class="form-nav">
+          <button class="btn-ghost" onclick="goStep(1)">← Back</button>
+          <button class="btn-primary" onclick="goStep(3)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Artist Identity -->
+      <div class="ob-form" id="ob-step-3">
+        <h2 class="ob-form-title">Your artist<br/><em>identity.</em></h2>
+        <p class="ob-form-sub">This becomes your public profile — the studio wall your collectors visit.</p>
+
+        <div class="form-group">
+          <label>Artist Name / Studio Name</label>
+          <input type="text" placeholder="e.g. Amara Osei or Studio Abudu"/>
+        </div>
+        <div class="form-group">
+          <label>Your Bio</label>
+          <textarea placeholder="Tell collectors who you are, what drives your work, and where you're from..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Primary Medium</label>
+          <div class="medium-tags">
+            <div class="medium-tag selected" onclick="toggleTag(this)">Oil on Canvas</div>
+            <div class="medium-tag" onclick="toggleTag(this)">Watercolour</div>
+            <div class="medium-tag" onclick="toggleTag(this)">Sculpture</div>
+            <div class="medium-tag" onclick="toggleTag(this)">Photography</div>
+            <div class="medium-tag" onclick="toggleTag(this)">Digital Art</div>
+            <div class="medium-tag" onclick="toggleTag(this)">Textile</div>
+            <div class="medium-tag" onclick="toggleTag(this)">Mixed Media</div>
+            <div class="medium-tag" onclick="toggleTag(this)">Printmaking</div>
+            <div class="medium-tag" onclick="toggleTag(this)">Ceramics</div>
+            <div class="medium-tag" onclick="toggleTag(this)">Illustration</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Years Active</label>
+          <select>
+            <option>Less than 1 year</option>
+            <option>1–3 years</option>
+            <option selected>3–7 years</option>
+            <option>7–15 years</option>
+            <option>15+ years</option>
+          </select>
+        </div>
+
+        <div class="form-nav">
+          <button class="btn-ghost" onclick="goStep(2)">← Back</button>
+          <button class="btn-primary" onclick="goStep(4)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: Upload Works -->
+      <div class="ob-form" id="ob-step-4">
+        <h2 class="ob-form-title">Upload your<br/><em>works.</em></h2>
+        <p class="ob-form-sub">Add 3–12 works to open your gallery. You can add more after launch.</p>
+
+        <div class="upload-zone" onclick="alert('File upload would open here in the live app')">
+          <div class="upload-icon">⬆</div>
+          <div class="upload-text">Drag & drop or click to upload</div>
+          <div class="upload-sub">JPG, PNG, TIFF · Max 50MB per file</div>
+        </div>
+
+        <div style="margin-top:32px">
+          <div class="section-label" style="margin-bottom:24px">Social &amp; Portfolio Links</div>
+          <div class="social-row">
+            <span class="social-prefix">instagram.com/</span>
+            <input type="text" placeholder="yourhandle" style="padding: 10px 14px; font-size:14px"/>
+          </div>
+          <div class="social-row">
+            <span class="social-prefix">behance.net/</span>
+            <input type="text" placeholder="yourprofile" style="padding: 10px 14px; font-size:14px"/>
+          </div>
+          <div class="social-row">
+            <span class="social-prefix">Website</span>
+            <input type="text" placeholder="https://yourstudio.com" style="padding: 10px 14px; font-size:14px"/>
+          </div>
+        </div>
+
+        <div class="form-nav">
+          <button class="btn-ghost" onclick="goStep(3)">← Back</button>
+          <button class="btn-primary" onclick="goStep(5)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- STEP 5: Go Live -->
+      <div class="ob-form" id="ob-step-5">
+        <h2 class="ob-form-title">Almost<br/><em>live.</em></h2>
+        <p class="ob-form-sub">Review your profile settings and choose how you want collectors to reach you.</p>
+
+        <div class="form-group">
+          <label>Profile Visibility</label>
+          <select>
+            <option>Public — anyone can see my work</option>
+            <option>Invite-only — collectors need a link</option>
+            <option>Private — hidden until I'm ready</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Commission on Sales</label>
+          <p style="font-size:14px;color:var(--text2);font-weight:300;line-height:1.8;padding:14px 0">Canvs charges <strong style="color:var(--gold)">8%</strong> commission on completed sales only. No monthly fees during beta. You keep 92% of every sale, paid directly to your bank account within 3 business days.</p>
+        </div>
+        <div class="form-group">
+          <label>Edition Certificates</label>
+          <select>
+            <option>Yes — generate digital certificate per sale</option>
+            <option>No — I handle provenance myself</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Notifications</label>
+          <select>
+            <option>Email + In-app (recommended)</option>
+            <option>Email only</option>
+            <option>In-app only</option>
+          </select>
+        </div>
+
+        <div style="padding:20px;background:var(--bg2);border:0.5px solid var(--border);margin-bottom:28px">
+          <p style="font-size:13px;color:var(--text3);font-weight:300;line-height:1.9">By launching your profile, you agree to Canvs' <span style="color:var(--gold);cursor:pointer">Terms of Service</span> and <span style="color:var(--gold);cursor:pointer">Artist Guidelines</span>. Your works must be original and you must own the rights to sell them.</p>
+        </div>
+
+        <div class="form-nav">
+          <button class="btn-ghost" onclick="goStep(4)">← Back</button>
+          <button class="btn-primary" onclick="completeOnboard()" style="padding:16px 48px;font-size:12px">Launch My Profile ✦</button>
+        </div>
+      </div>
+
+      <!-- SUCCESS -->
+      <div class="ob-success" id="ob-success">
+        <div class="success-icon">✦</div>
+        <h2 class="success-title">You're<br/><em>live.</em></h2>
+        <p class="success-sub">Your artist profile is live on Canvs. Collectors can now discover your work. Welcome to the space.</p>
+        <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+          <button class="btn-primary" onclick="showPage('profile')">View My Profile →</button>
+          <button class="btn-ghost" onclick="showPage('gallery')">Explore Gallery</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     PAGE 3: GALLERY
+══════════════════════════════════════ -->
+<div id="page-gallery" class="page">
+  <div class="gallery-header">
+    <h1 class="gallery-h1">The <em>Gallery</em></h1>
+    <p class="gallery-sub">Original works, limited editions, direct from the artist.</p>
+    <div class="gallery-filters">
+      <button class="filter-btn active" onclick="setFilter(this)">All Works</button>
+      <button class="filter-btn" onclick="setFilter(this)">Painting</button>
+      <button class="filter-btn" onclick="setFilter(this)">Photography</button>
+      <button class="filter-btn" onclick="setFilter(this)">Sculpture</button>
+      <button class="filter-btn" onclick="setFilter(this)">Digital</button>
+      <button class="filter-btn" onclick="setFilter(this)">Mixed Media</button>
+      <select class="filter-select">
+        <option>Sort: Latest</option>
+        <option>Sort: Price ↑</option>
+        <option>Sort: Price ↓</option>
+        <option>Sort: Editions Remaining</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="gallery-grid">
+
+    <!-- Work 1 -->
+    <div class="art-item" onclick="showPage('profile')">
+      <svg class="art-item-img" viewBox="0 0 400 480" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="480" fill="#1a1612"/>
+        <ellipse cx="200" cy="220" rx="130" ry="170" fill="#3a2510" opacity="0.7"/>
+        <ellipse cx="170" cy="190" rx="80" ry="110" fill="#c9a96e" opacity="0.18"/>
+        <circle cx="220" cy="170" r="65" fill="#7a3e22" opacity="0.5"/>
+        <path d="M50 360 Q200 260 350 340" stroke="#c9a96e" stroke-width="0.8" fill="none" opacity="0.3"/>
+        <rect x="20" y="20" width="360" height="440" fill="none" stroke="rgba(201,169,110,0.1)" stroke-width="0.5"/>
+      </svg>
+      <div class="art-badge badge-limited">Limited 2/5</div>
+      <div class="art-item-overlay">
+        <div class="ai-artist">Amara Osei</div>
+        <div class="ai-title">Vessel No. 7</div>
+        <div class="ai-medium">Oil on Canvas · 90×120cm</div>
+        <div class="ai-footer">
+          <div><div class="ai-price">₦280,000</div><div class="ai-edition">3 editions remaining</div></div>
+          <button class="btn-outline-gold" onclick="event.stopPropagation();alert('Purchase flow would open here')">Acquire</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Work 2 -->
+    <div class="art-item" onclick="showPage('profile')">
+      <svg class="art-item-img" viewBox="0 0 400 480" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="480" fill="#161a1e"/>
+        <rect x="0" y="120" width="400" height="240" fill="#1d2a38" opacity="0.7"/>
+        <circle cx="200" cy="240" r="110" fill="none" stroke="#4a7a9b" stroke-width="0.8" opacity="0.5"/>
+        <circle cx="200" cy="240" r="75" fill="none" stroke="#4a7a9b" stroke-width="0.6" opacity="0.35"/>
+        <circle cx="200" cy="240" r="40" fill="#4a7a9b" opacity="0.12"/>
+        <line x1="0" y1="240" x2="400" y2="240" stroke="rgba(74,122,155,0.2)" stroke-width="0.5"/>
+        <line x1="200" y1="0" x2="200" y2="480" stroke="rgba(74,122,155,0.2)" stroke-width="0.5"/>
+        <circle cx="200" cy="240" r="8" fill="#4a7a9b" opacity="0.4"/>
+      </svg>
+      <div class="art-badge badge-limited">Limited 1/3</div>
+      <div class="art-item-overlay">
+        <div class="ai-artist">Temi Alade</div>
+        <div class="ai-title">Still Waters III</div>
+        <div class="ai-medium">Watercolour · 60×80cm</div>
+        <div class="ai-footer">
+          <div><div class="ai-price">₦95,000</div><div class="ai-edition">2 editions remaining</div></div>
+          <button class="btn-outline-gold" onclick="event.stopPropagation();alert('Purchase flow would open here')">Acquire</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Work 3 -->
+    <div class="art-item" onclick="showPage('profile')">
+      <svg class="art-item-img" viewBox="0 0 400 480" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="480" fill="#1a1310"/>
+        <polygon points="200,40 370,420 30,420" fill="#7a2e1a" opacity="0.45"/>
+        <polygon points="130,80 310,80 360,440 80,440" fill="none" stroke="#c9a96e" stroke-width="0.6" opacity="0.35"/>
+        <circle cx="200" cy="280" r="55" fill="#c9a96e" opacity="0.1"/>
+        <line x1="200" y1="40" x2="200" y2="440" stroke="rgba(201,169,110,0.15)" stroke-width="0.5"/>
+        <rect x="160" y="240" width="80" height="80" fill="none" stroke="rgba(201,169,110,0.2)" stroke-width="0.5"/>
+      </svg>
+      <div class="art-badge badge-limited">Limited 5/10</div>
+      <div class="art-item-overlay">
+        <div class="ai-artist">Ife Bankole</div>
+        <div class="ai-title">Formation V</div>
+        <div class="ai-medium">Acrylic on Board · 50×70cm</div>
+        <div class="ai-footer">
+          <div><div class="ai-price">₦52,000</div><div class="ai-edition">5 editions remaining</div></div>
+          <button class="btn-outline-gold" onclick="event.stopPropagation();alert('Purchase flow would open here')">Acquire</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Work 4 -->
+    <div class="art-item" onclick="showPage('profile')">
+      <svg class="art-item-img" viewBox="0 0 400 480" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="480" fill="#12181a"/>
+        <rect x="60" y="60" width="280" height="360" fill="#1e2d2f" opacity="0.8"/>
+        <rect x="100" y="100" width="200" height="280" fill="#2a3f42" opacity="0.6"/>
+        <line x1="60" y1="240" x2="340" y2="240" stroke="#7a9e87" stroke-width="0.5" opacity="0.5"/>
+        <line x1="200" y1="60" x2="200" y2="420" stroke="#7a9e87" stroke-width="0.5" opacity="0.5"/>
+        <circle cx="200" cy="240" r="50" fill="none" stroke="#7a9e87" stroke-width="0.6" opacity="0.4"/>
+        <circle cx="200" cy="240" r="20" fill="#7a9e87" opacity="0.15"/>
+      </svg>
+      <div class="art-badge badge-sold">Sold Out</div>
+      <div class="art-item-overlay">
+        <div class="ai-artist">Chisom Eze</div>
+        <div class="ai-title">Meridian Study</div>
+        <div class="ai-medium">Photography · 40×60cm</div>
+        <div class="ai-footer">
+          <div><div class="ai-price">₦68,000</div><div class="ai-edition">All editions sold</div></div>
+          <button class="btn-ghost" style="padding:8px 16px;font-size:9px" onclick="event.stopPropagation()">Notify me</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Work 5 -->
+    <div class="art-item" onclick="showPage('profile')">
+      <svg class="art-item-img" viewBox="0 0 400 480" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="480" fill="#1c1408"/>
+        <path d="M80 400 Q200 100 320 400" stroke="#c9a96e" stroke-width="1" fill="rgba(201,169,110,0.05)" opacity="0.6"/>
+        <path d="M60 380 Q200 80 340 380" stroke="#c9a96e" stroke-width="0.5" fill="none" opacity="0.3"/>
+        <circle cx="200" cy="220" r="80" fill="rgba(201,169,110,0.06)"/>
+        <ellipse cx="200" cy="340" rx="100" ry="30" fill="#100e06" opacity="0.6"/>
+        <line x1="40" y1="60" x2="360" y2="60" stroke="rgba(201,169,110,0.08)" stroke-width="0.5"/>
+      </svg>
+      <div class="art-badge badge-limited">Limited 3/7</div>
+      <div class="art-item-overlay">
+        <div class="ai-artist">Ngozi Adeyemi</div>
+        <div class="ai-title">Harmattan Arch</div>
+        <div class="ai-medium">Oil on Linen · 100×140cm</div>
+        <div class="ai-footer">
+          <div><div class="ai-price">₦420,000</div><div class="ai-edition">4 editions remaining</div></div>
+          <button class="btn-outline-gold" onclick="event.stopPropagation();alert('Purchase flow would open here')">Acquire</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Work 6 -->
+    <div class="art-item" onclick="showPage('profile')">
+      <svg class="art-item-img" viewBox="0 0 400 480" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="480" fill="#180d14"/>
+        <ellipse cx="200" cy="240" rx="150" ry="180" fill="#3a1028" opacity="0.6"/>
+        <ellipse cx="200" cy="200" rx="90" ry="110" fill="#6b1e42" opacity="0.4"/>
+        <circle cx="200" cy="180" r="50" fill="#c9508a" opacity="0.15"/>
+        <path d="M50 440 Q200 200 350 440" stroke="#c9508a" stroke-width="0.6" fill="none" opacity="0.3"/>
+        <rect x="20" y="20" width="360" height="440" fill="none" stroke="rgba(201,80,138,0.1)" stroke-width="0.5"/>
+      </svg>
+      <div class="art-badge badge-limited">Limited 1/5</div>
+      <div class="art-item-overlay">
+        <div class="ai-artist">Adaeze Obi</div>
+        <div class="ai-title">Bloom, Quietly</div>
+        <div class="ai-medium">Mixed Media · 70×90cm</div>
+        <div class="ai-footer">
+          <div><div class="ai-price">₦185,000</div><div class="ai-edition">4 editions remaining</div></div>
+          <button class="btn-outline-gold" onclick="event.stopPropagation();alert('Purchase flow would open here')">Acquire</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     PAGE 4: ARTIST PROFILE
+══════════════════════════════════════ -->
+<div id="page-profile" class="page">
+  <div class="profile-hero">
+
+    <!-- Left -->
+    <div class="profile-left">
+      <div class="profile-avatar">A</div>
+      <div class="profile-verified">Verified Artist</div>
+      <h1 class="profile-name">Amara Osei</h1>
+      <p class="profile-title">Painter · Oil &amp; Mixed Media</p>
+
+      <div class="profile-meta">
+        <div class="profile-meta-row">
+          <span class="pm-label">Based in</span>
+          <span class="pm-value">Lagos, Nigeria</span>
+        </div>
+        <div class="profile-meta-row">
+          <span class="pm-label">Medium</span>
+          <span class="pm-value">Oil on Canvas, Acrylic</span>
+        </div>
+        <div class="profile-meta-row">
+          <span class="pm-label">Active</span>
+          <span class="pm-value">Since 2017</span>
+        </div>
+        <div class="profile-meta-row">
+          <span class="pm-label">Member</span>
+          <span class="pm-value" style="color:var(--gold)">Beta Artist — Since Jan 2025</span>
+        </div>
+      </div>
+
+      <div class="profile-stats">
+        <div>
+          <span class="pstat-num">24<em></em></span>
+          <p class="pstat-label">Works Listed</p>
+        </div>
+        <div>
+          <span class="pstat-num">18<em></em></span>
+          <p class="pstat-label">Editions Sold</p>
+        </div>
+        <div>
+          <span class="pstat-num">6<em></em></span>
+          <p class="pstat-label">Shows Featured</p>
+        </div>
+      </div>
+
+      <p class="profile-bio">Amara Osei is a Lagos-based painter whose practice sits at the intersection of West African visual traditions and contemporary abstraction. Her work explores themes of identity, memory, and belonging — rendered in rich ochres, deep umbers, and the occasional shock of cobalt.</p>
+
+      <div class="profile-socials">
+        <a class="social-link">Instagram</a>
+        <a class="social-link">Behance</a>
+        <a class="social-link">Website</a>
+      </div>
+
+      <div style="margin-top:36px;display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn-primary" style="padding:12px 28px;font-size:10px">Follow Artist</button>
+        <button class="btn-ghost" style="padding:12px 28px;font-size:10px" onclick="alert('Message artist feature')">Message</button>
+      </div>
+    </div>
+
+    <!-- Right -->
+    <div class="profile-right">
+      <div class="profile-tabs">
+        <div class="ptab active" onclick="setTab(this,'tab-works')">Works</div>
+        <div class="ptab" onclick="setTab(this,'tab-shows')">Exhibitions</div>
+        <div class="ptab" onclick="setTab(this,'tab-about')">About</div>
+      </div>
+
+      <!-- Works tab -->
+      <div id="tab-works">
+        <div class="profile-works">
+          <div class="pw-item">
+            <svg viewBox="0 0 300 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">
+              <rect width="300" height="280" fill="#1a1612"/>
+              <ellipse cx="150" cy="130" rx="90" ry="110" fill="#3a2510" opacity="0.7"/>
+              <ellipse cx="130" cy="110" rx="55" ry="75" fill="#c9a96e" opacity="0.18"/>
+              <circle cx="165" cy="100" r="45" fill="#7a3e22" opacity="0.5"/>
+              <rect x="15" y="15" width="270" height="250" fill="none" stroke="rgba(201,169,110,0.1)" stroke-width="0.5"/>
+            </svg>
+            <div class="pw-overlay">
+              <div class="pw-title">Vessel No. 7</div>
+              <div class="pw-price">₦280,000 · Ed. 2/5</div>
+            </div>
+          </div>
+          <div class="pw-item">
+            <svg viewBox="0 0 300 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">
+              <rect width="300" height="280" fill="#1c1408"/>
+              <path d="M60 240 Q150 60 240 240" stroke="#c9a96e" stroke-width="1" fill="rgba(201,169,110,0.05)" opacity="0.6"/>
+              <circle cx="150" cy="140" r="55" fill="rgba(201,169,110,0.06)"/>
+              <ellipse cx="150" cy="210" rx="70" ry="20" fill="#100e06" opacity="0.6"/>
+            </svg>
+            <div class="pw-overlay">
+              <div class="pw-title">Harmattan Study I</div>
+              <div class="pw-price">₦145,000 · Ed. 1/5</div>
+            </div>
+          </div>
+          <div class="pw-item">
+            <svg viewBox="0 0 300 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">
+              <rect width="300" height="280" fill="#16181c"/>
+              <rect x="40" y="40" width="220" height="200" fill="#1e2530" opacity="0.8"/>
+              <circle cx="150" cy="140" r="70" fill="none" stroke="#4a7a9b" stroke-width="0.7" opacity="0.5"/>
+              <circle cx="150" cy="140" r="40" fill="none" stroke="#4a7a9b" stroke-width="0.5" opacity="0.35"/>
+              <line x1="40" y1="140" x2="260" y2="140" stroke="rgba(74,122,155,0.2)" stroke-width="0.5"/>
+            </svg>
+            <div class="pw-overlay">
+              <div class="pw-title">Blue Interior</div>
+              <div class="pw-price">₦92,000 · Ed. 3/8</div>
+            </div>
+          </div>
+          <div class="pw-item">
+            <svg viewBox="0 0 300 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">
+              <rect width="300" height="280" fill="#1a130f"/>
+              <polygon points="150,30 270,250 30,250" fill="#7a2e1a" opacity="0.45"/>
+              <polygon points="100,60 220,60 255,255 60,255" fill="none" stroke="#c9a96e" stroke-width="0.5" opacity="0.3"/>
+              <circle cx="150" cy="170" r="38" fill="#c9a96e" opacity="0.1"/>
+            </svg>
+            <div class="pw-overlay">
+              <div class="pw-title">Formation Series II</div>
+              <div class="pw-price">₦68,000 · Ed. 4/10</div>
+            </div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:36px">
+          <button class="btn-ghost" onclick="showPage('gallery')">View All 24 Works →</button>
+        </div>
+      </div>
+
+      <!-- Shows tab -->
+      <div id="tab-shows" style="display:none">
+        <div>
+          <div class="show-row" style="cursor:default">
+            <div class="show-date"><span>22</span>Apr 2025</div>
+            <div><div class="show-name">Vessels &amp; Voids — Solo Exhibition</div><div class="show-meta">Thought Pyramid Art Centre · Abuja</div></div>
+            <span class="show-tag tag-open">Open</span>
+          </div>
+          <div class="show-row" style="cursor:default">
+            <div class="show-date"><span>14</span>Apr 2025</div>
+            <div><div class="show-name">Chromatics — Group Exhibition</div><div class="show-meta">Terra Kulture · Victoria Island, Lagos</div></div>
+            <span class="show-tag tag-open">Open</span>
+          </div>
+          <div class="show-row" style="cursor:default;opacity:0.6">
+            <div class="show-date"><span>10</span>Jan 2025</div>
+            <div><div class="show-name">Emergence — Contemporary African Art</div><div class="show-meta">Alliance Française · Lagos</div></div>
+            <span class="show-tag tag-full">Closed</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- About tab -->
+      <div id="tab-about" style="display:none">
+        <div style="max-width:600px">
+          <h3 style="font-size:28px;font-weight:300;margin-bottom:20px">Statement</h3>
+          <p style="font-size:16px;font-weight:300;color:var(--text2);line-height:2;margin-bottom:36px">My practice is rooted in the idea that objects hold memory. The vessels in my series are not containers — they are presences. They sit, they witness, they accumulate. Each layer of paint is a year, a conversation, a room I once stood in and can no longer return to.</p>
+          <h3 style="font-size:28px;font-weight:300;margin-bottom:20px">Education</h3>
+          <p style="font-size:15px;font-weight:300;color:var(--text2);line-height:2;margin-bottom:12px">BFA Fine Art — Yaba College of Technology, Lagos (2016)</p>
+          <p style="font-size:15px;font-weight:300;color:var(--text2);line-height:2;margin-bottom:36px">Residency — Triangle Arts Trust, Nigeria (2019)</p>
+          <h3 style="font-size:28px;font-weight:300;margin-bottom:20px">Press</h3>
+          <p style="font-size:15px;font-weight:300;color:var(--gold);line-height:2;margin-bottom:8px">The Guardian Nigeria — "New Voices in Lagos Painting" (2024)</p>
+          <p style="font-size:15px;font-weight:300;color:var(--gold);line-height:2">ArtAfrica Magazine — Feature Interview (2023)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     PAGE 5: EXHIBITIONS
+══════════════════════════════════════ -->
+<div id="page-exhibitions" class="page">
+  <div class="exh-header">
+    <h1 class="exh-h1">Exhibition <em>Board</em></h1>
+    <p class="exh-sub">Shows, pop-ups, and virtual openings — all in one place.</p>
+    <div class="exh-filters">
+      <button class="filter-btn active" onclick="setFilter(this)">All Shows</button>
+      <button class="filter-btn" onclick="setFilter(this)">Lagos</button>
+      <button class="filter-btn" onclick="setFilter(this)">Abuja</button>
+      <button class="filter-btn" onclick="setFilter(this)">Virtual</button>
+      <button class="filter-btn" onclick="setFilter(this)">International</button>
+      <button class="filter-btn" onclick="setFilter(this)">Free Entry</button>
+    </div>
+  </div>
+
+  <div class="exh-body">
+    <div class="exh-list">
+
+      <div class="exh-item featured">
+        <div class="exh-date-col"><div class="exh-month">Apr</div><div class="exh-day">14</div></div>
+        <div class="exh-info">
+          <div class="exh-tag-row">
+            <span class="exh-cat cat-group">Group Show</span>
+            <span class="exh-cat cat-fair" style="border-color:var(--gold);color:var(--gold)">Featured</span>
+          </div>
+          <div class="exh-title">Chromatics — A Group Exhibition</div>
+          <div class="exh-venue">📍 Terra Kulture, Victoria Island, Lagos · Apr 14 – May 2, 2025</div>
+          <div class="exh-artists-list">Featuring: Amara Osei, Temi Alade, Ife Bankole + 8 others</div>
+        </div>
+        <div class="exh-action">
+          <span class="show-tag tag-open">Open</span>
+          <div class="exh-price">Free Entry</div>
+          <button class="btn-outline-gold" style="font-size:9px;padding:7px 16px" onclick="alert('RSVP flow')">RSVP</button>
+        </div>
+      </div>
+
+      <div class="exh-item">
+        <div class="exh-date-col"><div class="exh-month">Apr</div><div class="exh-day">22</div></div>
+        <div class="exh-info">
+          <div class="exh-tag-row"><span class="exh-cat cat-solo">Solo Show</span></div>
+          <div class="exh-title">Amara Osei — Vessels &amp; Voids</div>
+          <div class="exh-venue">📍 Thought Pyramid Art Centre, Abuja · Apr 22 – May 10, 2025</div>
+          <div class="exh-artists-list">Amara Osei</div>
+        </div>
+        <div class="exh-action">
+          <span class="show-tag tag-open">Open</span>
+          <div class="exh-price">₦2,000 entry</div>
+          <button class="btn-outline-gold" style="font-size:9px;padding:7px 16px" onclick="alert('RSVP flow')">RSVP</button>
+        </div>
+      </div>
+
+      <div class="exh-item">
+        <div class="exh-date-col"><div class="exh-month">May</div><div class="exh-day">03</div></div>
+        <div class="exh-info">
+          <div class="exh-tag-row"><span class="exh-cat cat-virtual">Virtual</span></div>
+          <div class="exh-title">New Afrofuturism — Curated Drop</div>
+          <div class="exh-venue">🌐 Canvs Virtual Gallery · May 3 – May 17, 2025</div>
+          <div class="exh-artists-list">Ngozi Adeyemi, Chisom Eze, Adaeze Obi + 4 others</div>
+        </div>
+        <div class="exh-action">
+          <span class="show-tag tag-virtual">Virtual</span>
+          <div class="exh-price">Free</div>
+          <button class="btn-outline-gold" style="font-size:9px;padding:7px 16px" onclick="alert('View virtual gallery')">Enter</button>
+        </div>
+      </div>
+
+      <div class="exh-item">
+        <div class="exh-date-col"><div class="exh-month">May</div><div class="exh-day">18</div></div>
+        <div class="exh-info">
+          <div class="exh-tag-row"><span class="exh-cat cat-group">Group Show</span><span class="exh-cat cat-fair">Art Fair</span></div>
+          <div class="exh-title">Lagos Art Week — Open Studio</div>
+          <div class="exh-venue">📍 LagosPhoto Festival Grounds, Onikan · May 18–25, 2025</div>
+          <div class="exh-artists-list">20+ artists across disciplines</div>
+        </div>
+        <div class="exh-action">
+          <span class="show-tag tag-full">RSVP Full</span>
+          <div class="exh-price">₦5,000 entry</div>
+          <button class="btn-ghost" style="font-size:9px;padding:7px 16px">Waitlist</button>
+        </div>
+      </div>
+
+      <div class="exh-item">
+        <div class="exh-date-col"><div class="exh-month">Jun</div><div class="exh-day">06</div></div>
+        <div class="exh-info">
+          <div class="exh-tag-row"><span class="exh-cat cat-solo">Solo Show</span></div>
+          <div class="exh-title">Chisom Eze — Meridians</div>
+          <div class="exh-venue">📍 Rele Gallery, Lagos · Jun 6 – Jul 4, 2025</div>
+          <div class="exh-artists-list">Chisom Eze</div>
+        </div>
+        <div class="exh-action">
+          <span class="show-tag" style="border-color:var(--text3);color:var(--text3)">Upcoming</span>
+          <div class="exh-price">Free Entry</div>
+          <button class="btn-outline-gold" style="font-size:9px;padding:7px 16px" onclick="alert('Set reminder')">Remind me</button>
+        </div>
+      </div>
+
+      <div class="exh-item">
+        <div class="exh-date-col"><div class="exh-month">Jul</div><div class="exh-day">12</div></div>
+        <div class="exh-info">
+          <div class="exh-tag-row"><span class="exh-cat cat-group">Group Show</span><span class="exh-cat" style="border-color:var(--blue);color:var(--blue)">International</span></div>
+          <div class="exh-title">Africa Now — Contemporary Selections</div>
+          <div class="exh-venue">📍 1-54 Contemporary African Art Fair, London · Jul 12–15, 2025</div>
+          <div class="exh-artists-list">Amara Osei, Ngozi Adeyemi + international roster</div>
+        </div>
+        <div class="exh-action">
+          <span class="show-tag" style="border-color:var(--text3);color:var(--text3)">Upcoming</span>
+          <div class="exh-price">Ticketed</div>
+          <button class="btn-outline-gold" style="font-size:9px;padding:7px 16px" onclick="alert('Set reminder')">Remind me</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Sidebar -->
+    <div class="exh-sidebar">
+      <div class="exh-sb-title">Filter by</div>
+
+      <div class="filter-group">
+        <div class="fg-label">Show Type</div>
+        <div class="fg-options">
+          <div class="fg-opt"><div class="fg-check">✓</div>Solo Exhibition</div>
+          <div class="fg-opt"><div class="fg-check">✓</div>Group Show</div>
+          <div class="fg-opt"><div class="fg-check"></div>Art Fair</div>
+          <div class="fg-opt"><div class="fg-check">✓</div>Virtual</div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="fg-label">City</div>
+        <div class="fg-options">
+          <div class="fg-opt"><div class="fg-check">✓</div>Lagos</div>
+          <div class="fg-opt"><div class="fg-check">✓</div>Abuja</div>
+          <div class="fg-opt"><div class="fg-check"></div>Port Harcourt</div>
+          <div class="fg-opt"><div class="fg-check"></div>International</div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="fg-label">Entry</div>
+        <div class="fg-options">
+          <div class="fg-opt"><div class="fg-check"></div>Free only</div>
+          <div class="fg-opt"><div class="fg-check">✓</div>Paid events</div>
+        </div>
+      </div>
+
+      <div class="submit-box">
+        <h3 class="sb-h3">List an<br/><em>exhibition.</em></h3>
+        <p class="sb-body">Are you a gallery, collective, or artist organising a show? Get it in front of thousands of art lovers.</p>
+        <button class="btn-outline-gold" style="width:100%;text-align:center" onclick="alert('Exhibition submission form')">Submit a Show →</button>
+      </div>
+
+      <div style="padding:24px;background:var(--bg2);border:0.5px solid var(--border)">
+        <h3 class="sb-h3" style="font-size:18px;margin-bottom:8px">Never miss<br/>an opening.</h3>
+        <p style="font-size:13px;font-weight:300;color:var(--text2);line-height:1.8;margin-bottom:16px">Get email alerts for shows in your city, medium, and from your followed artists.</p>
+        <input type="email" placeholder="your@email.com" style="width:100%;background:var(--bg);border:0.5px solid var(--border2);color:var(--text);font-family:var(--serif);font-size:14px;padding:10px 14px;outline:none;margin-bottom:10px"/>
+        <button class="btn-primary" style="width:100%;text-align:center;padding:12px" onclick="alert('Email subscription confirmed!')">Subscribe</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════ SCRIPTS ═══════════ -->
+<script>
+  // ── Page routing ──
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+
+    // Update nav based on auth state
+    const isAuth = document.getElementById('nav-links-auth').classList.contains('hidden') === false;
+
+    // Mark active nav link
+    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+    const map = { gallery: 'nl-gallery', profile: 'nl-artists', exhibitions: 'nl-exhibitions' };
+    if (map[id]) {
+      const el = document.getElementById(map[id]);
+      if (el) el.classList.add('active');
+    }
+  }
+
+  // ── Onboarding ──
+  let currentStep = 1;
+  const totalSteps = 5;
+
+  function goStep(n) {
+    if (n < 1 || n > totalSteps) return;
+
+    // Hide current
+    document.getElementById('ob-step-' + currentStep).classList.remove('active');
+
+    // Update step indicators
+    for (let i = 1; i <= totalSteps; i++) {
+      const dot = document.getElementById('dot-' + i);
+      const lbl = document.getElementById('lbl-' + i);
+      dot.className = 'ob-step-dot';
+      lbl.className = 'ob-step-label';
+      if (i < n) { dot.classList.add('done'); lbl.classList.add('done'); }
+      else if (i === n) { dot.classList.add('active'); lbl.classList.add('active'); }
+    }
+
+    // Progress bar
+    document.getElementById('ob-progress').style.width = (n / totalSteps * 100) + '%';
+
+    currentStep = n;
+
+    // Show new step
+    const newStep = document.getElementById('ob-step-' + n);
+    if (newStep) newStep.classList.add('active');
+  }
+
+  function selectRole(role) {
+    document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('role-' + role).classList.add('selected');
+  }
+
+  function toggleTag(el) {
+    el.classList.toggle('selected');
+  }
+
+  function completeOnboard() {
+    // Hide all steps
+    document.querySelectorAll('.ob-form').forEach(f => f.classList.remove('active'));
+
+    // Mark all steps done
+    for (let i = 1; i <= totalSteps; i++) {
+      const dot = document.getElementById('dot-' + i);
+      const lbl = document.getElementById('lbl-' + i);
+      if (dot) { dot.className = 'ob-step-dot done'; }
+      if (lbl) { lbl.className = 'ob-step-label done'; }
+    }
+    document.getElementById('ob-progress').style.width = '100%';
+
+    // Show success
+    document.getElementById('ob-success').classList.add('active');
+
+    // Switch nav to auth state
+    document.getElementById('nav-links-guest').classList.add('hidden');
+    const authNav = document.getElementById('nav-links-auth');
+    authNav.classList.remove('hidden');
+
+    // Set avatar initials from name fields
+    const fn = document.getElementById('fn').value || 'A';
+    const ln = document.getElementById('ln').value || '';
+    document.getElementById('nav-avatar').textContent = (fn[0] + (ln[0] || '')).toUpperCase();
+  }
+
+  // ── Gallery filters ──
+  function setFilter(btn) {
+    btn.closest('.gallery-filters, .exh-filters').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  // ── Profile tabs ──
+  function setTab(tab, contentId) {
+    tab.closest('.profile-right').querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('#tab-works, #tab-shows, #tab-about').forEach(el => el.style.display = 'none');
+    document.getElementById(contentId).style.display = 'block';
+  }
+</script>
+</body>
+</html>

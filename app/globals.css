@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.625rem;
+    --background: #14110D;
+    --surface: #1C1812;
+    --surface-raised: #231F1A;
+    --surface-overlay: #2A2520;
+    --border: #3A342E;
+    --border-subtle: #2E2922;
+    --accent: #CC6B45;
+    --accent-hover: #B85C3A;
+    --gold: #DDA94A;
+    --gold-hover: #C8962E;
+    --foreground: #F5EDE3;
+    --foreground-muted: #A89880;
+    --foreground-subtle: #6B5C4E;
+  }
+
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .gradient-accent {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--gold) 100%);
+  }
+
+  .text-gradient-accent {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .border-gradient {
+    border: 1px solid transparent;
+    background: linear-gradient(var(--surface-raised), var(--surface-raised)) padding-box,
+                linear-gradient(135deg, var(--accent), var(--gold)) border-box;
+  }
+}
