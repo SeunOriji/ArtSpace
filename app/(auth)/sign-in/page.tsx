@@ -1,12 +1,35 @@
-import type { Metadata } from "next";
-import Link from "next/link";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Sign in",
-  description: "Sign in to your ArtSpace account.",
-};
+import { useState, type FormEvent } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/auth.store";
 
 export default function SignInPage() {
+  const router = useRouter();
+  const setUser = useAuthStore((s) => s.setUser);
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    setUser(
+      {
+        id: crypto.randomUUID(),
+        name: email.split("@")[0],
+        email,
+        role: "collector",
+        isVerified: false,
+        plan: "free",
+      },
+      "mock-token"
+    );
+
+    router.push("/dashboard/feed");
+  }
+
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
@@ -20,7 +43,7 @@ export default function SignInPage() {
           <p className="mt-2 text-sm text-foreground-muted">Sign in to your account to continue.</p>
         </div>
 
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-foreground-muted">
               Email
@@ -30,6 +53,8 @@ export default function SignInPage() {
               type="email"
               autoComplete="email"
               required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground placeholder-foreground-subtle outline-none transition focus:border-accent"
               placeholder="you@example.com"
             />
@@ -51,9 +76,10 @@ export default function SignInPage() {
 
           <button
             type="submit"
-            className="w-full rounded-full bg-accent py-3 text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
+            disabled={isSubmitting}
+            className="w-full rounded-full bg-accent py-3 text-sm font-semibold text-white transition-colors hover:bg-accent-hover disabled:opacity-60"
           >
-            Sign in
+            {isSubmitting ? "Signing in…" : "Sign in"}
           </button>
         </form>
 

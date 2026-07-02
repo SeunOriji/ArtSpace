@@ -1,8 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Search, Upload } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Bell, Search, Upload, ShoppingBag, Palette, BarChart2, LogOut } from "lucide-react";
 import { useNotificationsStore } from "@/store/notifications.store";
+import { useCommissionsStore } from "@/store/commissions.store";
+import { useAuthStore } from "@/store/auth.store";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const moreLinks = [
+  { label: "Marketplace", href: "/dashboard/marketplace", icon: ShoppingBag },
+  { label: "Commissions", href: "/dashboard/commissions", icon: Palette },
+  { label: "Analytics", href: "/dashboard/analytics", icon: BarChart2 },
+];
 
 interface TopbarProps {
   artistName?: string;
@@ -10,7 +26,16 @@ interface TopbarProps {
 }
 
 export function Topbar({ artistName = "Amara Obi", artistInitials = "AO" }: TopbarProps) {
+  const router = useRouter();
   const unreadCount = useNotificationsStore((s) => s.unreadCount());
+  const newCommissionsCount = useCommissionsStore((s) => s.newRequestsCount());
+  const clearAuth = useAuthStore((s) => s.clearAuth);
+
+  function handleLogout() {
+    clearAuth();
+    router.push("/");
+  }
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-background/90 backdrop-blur-md px-4 lg:px-6">
       {/* Search */}
@@ -56,9 +81,48 @@ export function Topbar({ artistName = "Amara Obi", artistInitials = "AO" }: Topb
           )}
         </Link>
 
-        {/* Avatar */}
+        {/* Avatar — on mobile this is the menu for everything not on the bottom nav; on desktop the sidebar already covers that, so it's just an avatar */}
+        <div className="relative lg:hidden">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                aria-label="Account menu"
+                className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-accent/20 text-xs font-bold text-accent transition-colors hover:bg-accent/30"
+                title={artistName}
+              >
+                {artistInitials}
+                {newCommissionsCount > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-background bg-accent px-1 font-heading text-[10px] font-extrabold text-white">
+                    {newCommissionsCount}
+                  </span>
+                )}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {moreLinks.map(({ label, href, icon: Icon }) => (
+                <DropdownMenuItem key={href} asChild>
+                  <Link href={href}>
+                    <Icon size={15} />
+                    {label}
+                    {label === "Commissions" && newCommissionsCount > 0 && (
+                      <span className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent px-1.5 font-heading text-[10px] font-extrabold text-white">
+                        {newCommissionsCount}
+                      </span>
+                    )}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem destructive onClick={handleLogout}>
+                <LogOut size={15} />
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
         <div
-          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-accent/20 text-xs font-bold text-accent"
+          className="hidden h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-accent/20 text-xs font-bold text-accent lg:flex"
           title={artistName}
         >
           {artistInitials}

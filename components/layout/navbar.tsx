@@ -45,7 +45,7 @@ export function Navbar() {
             href="/sign-in"
             className="text-sm font-medium text-foreground-muted transition-colors hover:text-foreground"
           >
-            Sign in
+            Login
           </Link>
           <Link
             href="/sign-up"
@@ -87,7 +87,7 @@ export function Navbar() {
               className="rounded-full border border-border px-5 py-2.5 text-center text-sm font-medium text-foreground"
               onClick={() => setMenuOpen(false)}
             >
-              Sign in
+              Login
             </Link>
             <Link
               href="/sign-up"
