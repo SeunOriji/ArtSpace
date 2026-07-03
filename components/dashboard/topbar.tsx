@@ -6,6 +6,7 @@ import { Bell, Search, Upload, ShoppingBag, Palette, BarChart2, LogOut } from "l
 import { useNotificationsStore } from "@/store/notifications.store";
 import { useCommissionsStore } from "@/store/commissions.store";
 import { useAuthStore } from "@/store/auth.store";
+import { useHasMounted } from "@/hooks/use-has-mounted";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +28,7 @@ interface TopbarProps {
 
 export function Topbar({ artistName = "Amara Obi", artistInitials = "AO" }: TopbarProps) {
   const router = useRouter();
+  const hasMounted = useHasMounted();
   const unreadCount = useNotificationsStore((s) => s.unreadCount());
   const newCommissionsCount = useCommissionsStore((s) => s.newRequestsCount());
   const clearAuth = useAuthStore((s) => s.clearAuth);
@@ -74,7 +76,7 @@ export function Topbar({ artistName = "Amara Obi", artistInitials = "AO" }: Topb
           aria-label="Notifications"
         >
           <Bell size={17} />
-          {unreadCount > 0 && (
+          {hasMounted && unreadCount > 0 && (
             <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-background bg-accent px-1 font-heading text-[10px] font-extrabold text-white">
               {unreadCount}
             </span>
@@ -92,7 +94,7 @@ export function Topbar({ artistName = "Amara Obi", artistInitials = "AO" }: Topb
                 title={artistName}
               >
                 {artistInitials}
-                {newCommissionsCount > 0 && (
+                {hasMounted && newCommissionsCount > 0 && (
                   <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-background bg-accent px-1 font-heading text-[10px] font-extrabold text-white">
                     {newCommissionsCount}
                   </span>

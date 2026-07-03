@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { useNotificationsStore } from "@/store/notifications.store";
 import { useCommissionsStore } from "@/store/commissions.store";
 import { useAuthStore } from "@/store/auth.store";
+import { useHasMounted } from "@/hooks/use-has-mounted";
 
 const navItems = [
   { label: "Home", href: "/dashboard", icon: Home },
@@ -33,6 +34,7 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const hasMounted = useHasMounted();
   const unreadCount = useNotificationsStore((s) => s.unreadCount());
   const newCommissionsCount = useCommissionsStore((s) => s.newRequestsCount());
   const clearAuth = useAuthStore((s) => s.clearAuth);
@@ -71,12 +73,12 @@ export function Sidebar() {
                 >
                   <Icon size={18} strokeWidth={isActive ? 2 : 1.75} />
                   {label}
-                  {label === "Notifications" && unreadCount > 0 && (
+                  {hasMounted && label === "Notifications" && unreadCount > 0 && (
                     <span className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent px-1.5 font-heading text-[10px] font-extrabold text-white">
                       {unreadCount}
                     </span>
                   )}
-                  {label === "Commissions" && newCommissionsCount > 0 && (
+                  {hasMounted && label === "Commissions" && newCommissionsCount > 0 && (
                     <span className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent px-1.5 font-heading text-[10px] font-extrabold text-white">
                       {newCommissionsCount}
                     </span>

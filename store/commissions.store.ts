@@ -3,6 +3,23 @@ import { persist } from "zustand/middleware";
 
 export type CommissionRequestStatus = "new" | "quoted" | "declined";
 
+export interface QuoteMilestone {
+  id: string;
+  label: string;
+  amount: number;
+}
+
+export interface CommissionQuote {
+  title: string;
+  totalPrice: number;
+  deliveryDate: string;
+  depositPercent: number;
+  milestones: QuoteMilestone[];
+  revisionsIncluded: number;
+  sketchStageLabel: string;
+  noteToBuyer: string;
+}
+
 export interface CommissionRequest {
   id: string;
   clientName: string;
@@ -11,6 +28,7 @@ export interface CommissionRequest {
   timeLabel: string;
   message: string;
   status: CommissionRequestStatus;
+  quote?: CommissionQuote;
 }
 
 export type MilestoneStatus = "done" | "current" | "upcoming";
@@ -42,6 +60,51 @@ export interface CompletedCommission {
   price: number;
   completedLabel: string;
 }
+
+export interface PricingTier {
+  id: string;
+  label: string;
+  sizeLabel: string;
+  fromPrice: number;
+}
+
+export const COMMISSION_TYPES = ["Portraits", "Abstract", "Landscapes", "Murals", "Digital", "NSFW"] as const;
+export const TURNAROUND_OPTIONS = ["1–2 weeks", "2–4 weeks", "4–6 weeks", "6–8 weeks", "8–12 weeks"] as const;
+export const DEPOSIT_OPTIONS = [20, 30, 50] as const;
+
+export interface CommissionSettings {
+  isOpen: boolean;
+  tiers: PricingTier[];
+  depositPercent: number;
+  turnaroundLabel: string;
+  acceptedTypes: Record<string, boolean>;
+  maxSlots: number;
+  requireBrief: boolean;
+  termsText: string;
+}
+
+const seedSettings: CommissionSettings = {
+  isOpen: true,
+  tiers: [
+    { id: "tier-1", label: "Small", sizeLabel: "Up to 60×60cm", fromPrice: 250_000 },
+    { id: "tier-2", label: "Medium", sizeLabel: "Up to 100×120cm", fromPrice: 550_000 },
+    { id: "tier-3", label: "Large", sizeLabel: "120cm and above", fromPrice: 1_000_000 },
+  ],
+  depositPercent: 30,
+  turnaroundLabel: "4–6 weeks",
+  acceptedTypes: {
+    Portraits: true,
+    Abstract: true,
+    Landscapes: true,
+    Murals: false,
+    Digital: false,
+    NSFW: false,
+  },
+  maxSlots: 4,
+  requireBrief: true,
+  termsText:
+    "One round of revisions is included at the sketch stage. Deposits are non-refundable once the sketch is approved. Shipping is arranged through ArtSpace with tracking.",
+};
 
 const seedRequests: CommissionRequest[] = [
   {
@@ -212,9 +275,11 @@ interface CommissionsState {
   requests: CommissionRequest[];
   active: ActiveCommission[];
   completed: CompletedCommission[];
-  sendQuote: (id: string) => void;
+  settings: CommissionSettings;
+  sendQuote: (id: string, quote: CommissionQuote) => void;
   decline: (id: string) => void;
   advanceMilestone: (commissionId: string) => void;
+  updateSettings: (settings: CommissionSettings) => void;
   newRequestsCount: () => number;
 }
 
@@ -224,10 +289,11 @@ export const useCommissionsStore = create<CommissionsState>()(
       requests: seedRequests,
       active: seedActive,
       completed: seedCompleted,
+      settings: seedSettings,
 
-      sendQuote: (id) =>
+      sendQuote: (id, quote) =>
         set((s) => ({
-          requests: s.requests.map((r) => (r.id === id ? { ...r, status: "quoted" } : r)),
+          requests: s.requests.map((r) => (r.id === id ? { ...r, status: "quoted", quote } : r)),
         })),
 
       decline: (id) =>
@@ -268,8 +334,10 @@ export const useCommissionsStore = create<CommissionsState>()(
           return { active, completed };
         }),
 
+      updateSettings: (settings) => set({ settings }),
+
       newRequestsCount: () => get().requests.filter((r) => r.status === "new").length,
     }),
-    { name: "artspace-commissions" }
+    { name: "artspace-commissions", skipHydration: true }
   )
 );

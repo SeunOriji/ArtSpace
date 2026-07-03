@@ -34,6 +34,7 @@ export const useAuthStore = create<AuthState>()(
     {
       name: "artspace-auth",
       partialize: (state) => ({ user: state.user, token: state.token, isAuthenticated: state.isAuthenticated }),
+      skipHydration: true,
     }
   )
 );

@@ -130,6 +130,6 @@ export const useNotificationsStore = create<NotificationsState>()(
       followBack: (id) => set((s) => ({ followedBackIds: { ...s.followedBackIds, [id]: true } })),
       unreadCount: () => get().notifications.filter((n) => !n.read).length,
     }),
-    { name: "artspace-notifications" }
+    { name: "artspace-notifications", skipHydration: true }
   )
 );

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Check, CheckCircle2, Clock, Sparkles, Wallet, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { Check, CheckCircle2, Clock, Sparkles, Wallet, ShieldCheck, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useCommissionsStore,
@@ -9,6 +10,7 @@ import {
   type CommissionRequest,
   type CompletedCommission,
 } from "@/store/commissions.store";
+import { SendQuoteModal } from "./send-quote-modal";
 
 type TabKey = "requests" | "in-progress" | "completed";
 
@@ -18,9 +20,9 @@ function formatNaira(amount: number): string {
 }
 
 function RequestCard({ request }: { request: CommissionRequest }) {
-  const sendQuote = useCommissionsStore((s) => s.sendQuote);
   const decline = useCommissionsStore((s) => s.decline);
   const isNew = request.status === "new";
+  const [isQuoteOpen, setIsQuoteOpen] = useState(false);
 
   return (
     <div
@@ -55,7 +57,7 @@ function RequestCard({ request }: { request: CommissionRequest }) {
             {isNew && (
               <button
                 type="button"
-                onClick={() => sendQuote(request.id)}
+                onClick={() => setIsQuoteOpen(true)}
                 className="rounded-lg bg-accent px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-accent-hover"
               >
                 Send a quote
@@ -79,6 +81,8 @@ function RequestCard({ request }: { request: CommissionRequest }) {
           </div>
         </div>
       </div>
+
+      {isNew && <SendQuoteModal request={request} open={isQuoteOpen} onOpenChange={setIsQuoteOpen} />}
     </div>
   );
 }
@@ -263,11 +267,20 @@ export function CommissionsView() {
 
   return (
     <div className="mx-auto max-w-[1100px]">
-      <div>
-        <h1 className="font-heading text-2xl font-extrabold text-foreground sm:text-3xl">Commissions</h1>
-        <p className="mt-1.5 text-sm text-foreground-muted">
-          Milestone-based, deposit-protected custom work.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-2xl font-extrabold text-foreground sm:text-3xl">Commissions</h1>
+          <p className="mt-1.5 text-sm text-foreground-muted">
+            Milestone-based, deposit-protected custom work.
+          </p>
+        </div>
+        <Link
+          href="/dashboard/commissions/settings"
+          className="flex flex-shrink-0 items-center gap-2 rounded-xl border border-border-subtle bg-surface px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-raised"
+        >
+          <Settings size={15} />
+          <span className="hidden sm:inline">Commission settings</span>
+        </Link>
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">

@@ -44,6 +44,6 @@ export const useInteractionsStore = create<InteractionsState>()(
         }),
       reportWork: (workId) => set((s) => ({ reportedWorkIds: { ...s.reportedWorkIds, [workId]: true } })),
     }),
-    { name: "artspace-interactions" }
+    { name: "artspace-interactions", skipHydration: true }
   )
 );
