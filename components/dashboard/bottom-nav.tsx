@@ -2,24 +2,32 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Rss, Plus, CalendarDays, Layers } from "lucide-react";
+import { Home, Rss, Plus, MessageCircle, CalendarDays, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMessagesStore } from "@/store/messages.store";
+import { useHasMounted } from "@/hooks/use-has-mounted";
 
-const mobileNavItems = [
+const leftNavItems = [
   { label: "Home", href: "/dashboard", icon: Home },
   { label: "Feed", href: "/dashboard/feed", icon: Rss },
+];
+
+const rightNavItems = [
+  { label: "Chats", href: "/dashboard/messages", icon: MessageCircle },
   { label: "Studio", href: "/dashboard/portfolio", icon: Layers },
   { label: "Events", href: "/events", icon: CalendarDays },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
+  const hasMounted = useHasMounted();
+  const unreadMessagesCount = useMessagesStore((s) => s.totalUnreadCount());
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center border-t border-border bg-surface lg:hidden">
       {/* Left pair */}
       <div className="flex flex-1 items-center justify-around">
-        {mobileNavItems.slice(0, 2).map(({ label, href, icon: Icon }) => {
+        {leftNavItems.map(({ label, href, icon: Icon }) => {
           const isActive = pathname === href;
           return (
             <Link
@@ -48,20 +56,25 @@ export function BottomNav() {
         </Link>
       </div>
 
-      {/* Right pair */}
+      {/* Right group */}
       <div className="flex flex-1 items-center justify-around">
-        {mobileNavItems.slice(2).map(({ label, href, icon: Icon }) => {
+        {rightNavItems.map(({ label, href, icon: Icon }) => {
           const isActive = pathname === href;
           return (
             <Link
               key={href}
               href={href}
               className={cn(
-                "flex flex-col items-center gap-1 px-4 py-1 text-xs",
+                "relative flex flex-col items-center gap-1 px-3 py-1 text-xs",
                 isActive ? "text-accent" : "text-foreground-subtle"
               )}
             >
               <Icon size={20} strokeWidth={isActive ? 2 : 1.75} />
+              {label === "Chats" && hasMounted && unreadMessagesCount > 0 && (
+                <span className="absolute -top-1 right-1 flex h-[15px] min-w-[15px] items-center justify-center rounded-full border-[1.5px] border-surface bg-accent px-1 font-heading text-[9px] font-extrabold text-white">
+                  {unreadMessagesCount}
+                </span>
+              )}
               <span>{label}</span>
             </Link>
           );

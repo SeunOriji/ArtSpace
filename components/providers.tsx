@@ -7,6 +7,7 @@ import { useAuthStore } from "@/store/auth.store";
 import { useNotificationsStore } from "@/store/notifications.store";
 import { useCommissionsStore } from "@/store/commissions.store";
 import { useInteractionsStore } from "@/store/interactions.store";
+import { useMessagesStore } from "@/store/messages.store";
 
 // These stores persist to localStorage with `skipHydration: true`, so their
 // initial state matches the server on first render. Rehydrating them here,
@@ -18,6 +19,7 @@ function useRehydratePersistedStores() {
     useNotificationsStore.persist.rehydrate();
     useCommissionsStore.persist.rehydrate();
     useInteractionsStore.persist.rehydrate();
+    useMessagesStore.persist.rehydrate();
   }, []);
 }
 

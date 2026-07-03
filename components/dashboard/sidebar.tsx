@@ -8,6 +8,7 @@ import {
   LayoutGrid,
   ShoppingBag,
   Rss,
+  MessageCircle,
   Palette,
   CalendarDays,
   BarChart2,
@@ -17,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useNotificationsStore } from "@/store/notifications.store";
 import { useCommissionsStore } from "@/store/commissions.store";
+import { useMessagesStore } from "@/store/messages.store";
 import { useAuthStore } from "@/store/auth.store";
 import { useHasMounted } from "@/hooks/use-has-mounted";
 
@@ -25,6 +27,7 @@ const navItems = [
   { label: "My Portfolio", href: "/dashboard/portfolio", icon: LayoutGrid },
   { label: "Marketplace", href: "/dashboard/marketplace", icon: ShoppingBag },
   { label: "Feed", href: "/dashboard/feed", icon: Rss },
+  { label: "Messages", href: "/dashboard/messages", icon: MessageCircle },
   { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { label: "Commissions", href: "/dashboard/commissions", icon: Palette },
   { label: "Events", href: "/events", icon: CalendarDays },
@@ -37,6 +40,7 @@ export function Sidebar() {
   const hasMounted = useHasMounted();
   const unreadCount = useNotificationsStore((s) => s.unreadCount());
   const newCommissionsCount = useCommissionsStore((s) => s.newRequestsCount());
+  const unreadMessagesCount = useMessagesStore((s) => s.totalUnreadCount());
   const clearAuth = useAuthStore((s) => s.clearAuth);
 
   function handleLogout() {
@@ -81,6 +85,11 @@ export function Sidebar() {
                   {hasMounted && label === "Commissions" && newCommissionsCount > 0 && (
                     <span className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent px-1.5 font-heading text-[10px] font-extrabold text-white">
                       {newCommissionsCount}
+                    </span>
+                  )}
+                  {hasMounted && label === "Messages" && unreadMessagesCount > 0 && (
+                    <span className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent px-1.5 font-heading text-[10px] font-extrabold text-white">
+                      {unreadMessagesCount}
                     </span>
                   )}
                 </Link>
