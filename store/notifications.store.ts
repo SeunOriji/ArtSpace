@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { artworks } from "@/lib/artworks";
 
 export type NotificationType = "sale" | "comment" | "tag" | "like" | "share" | "follow";
 export type NotificationCategory = "likes" | "comments" | "shares" | "sales";
@@ -18,6 +19,7 @@ export interface Notification {
   timeLabel: string;
   group: "new" | "earlier";
   thumbnail?: boolean;
+  image?: string;
   isFollow?: boolean;
   read: boolean;
 }
@@ -37,6 +39,7 @@ const seedNotifications: Notification[] = [
     timeLabel: "12 minutes ago · Tap to arrange shipping",
     group: "new",
     thumbnail: true,
+    image: artworks[22]?.image,
     read: false,
   },
   {
@@ -48,6 +51,7 @@ const seedNotifications: Notification[] = [
     timeLabel: "1 hour ago · Harmattan Dusk",
     group: "new",
     thumbnail: true,
+    image: artworks[20]?.image,
     read: false,
   },
   {
@@ -80,6 +84,7 @@ const seedNotifications: Notification[] = [
     timeLabel: "3 hours ago",
     group: "new",
     thumbnail: true,
+    image: artworks[21]?.image,
     read: false,
   },
   {

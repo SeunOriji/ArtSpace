@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ArtworkThumbnail } from "@/components/artwork-lightbox";
 import { useInteractionsStore, type WorkComment } from "@/store/interactions.store";
 import { WorkCommentsModal } from "./work-comments-modal";
 
@@ -26,6 +27,8 @@ export interface Work {
   limited?: { sold: number; total: number };
   likes?: number;
   comments?: WorkComment[];
+  image?: string;
+  imageLarge?: string;
 }
 
 const badgeText: Record<WorkStatus, string> = {
@@ -83,10 +86,16 @@ export function WorkCard({ work }: { work: Work }) {
           isDraft ? "border border-dashed border-border" : "border border-border"
         }`}
       >
-        {isSold && <div className="absolute inset-0 bg-background/50" />}
+        {work.image && (
+          <ArtworkThumbnail
+            artwork={{ id: work.id, image: work.image, imageLarge: work.imageLarge ?? work.image, title: work.title }}
+            sizes="(min-width: 1024px) 22vw, 45vw"
+          />
+        )}
+        {isSold && <div className="pointer-events-none absolute inset-0 bg-background/50" />}
 
         <span
-          className={`absolute left-2.5 top-2.5 rounded-full border border-border-subtle bg-background/85 px-2.5 py-1 text-[10px] font-bold ${
+          className={`pointer-events-none absolute left-2.5 top-2.5 rounded-full border border-border-subtle bg-background/85 px-2.5 py-1 text-[10px] font-bold ${
             work.limited
               ? "text-gold"
               : work.status === "commission"

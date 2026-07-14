@@ -8,6 +8,7 @@ import { useNotificationsStore } from "@/store/notifications.store";
 import { useCommissionsStore } from "@/store/commissions.store";
 import { useInteractionsStore } from "@/store/interactions.store";
 import { useMessagesStore } from "@/store/messages.store";
+import { LightboxProvider } from "@/components/artwork-lightbox";
 
 // These stores persist to localStorage with `skipHydration: true`, so their
 // initial state matches the server on first render. Rehydrating them here,
@@ -40,7 +41,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <LightboxProvider>{children}</LightboxProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { Shield, Users, CheckCircle2 } from "lucide-react";
+import { artworks } from "@/lib/artworks";
+import { ArtworkThumbnail } from "@/components/artwork-lightbox";
 
 const stats = [
   { icon: Users, value: "10,000+", label: "Artists onboarded" },
   { icon: Shield, value: "Escrow-protected", label: "Every sale" },
   { icon: CheckCircle2, value: "Verified", label: "Authenticity" },
 ];
+
+const heroArtwork = artworks.find((a) => a.category === "african-art") ?? artworks[0];
 
 export function Hero() {
   return (
@@ -66,29 +70,22 @@ export function Hero() {
           {/* Featured artwork card */}
           <div className="relative">
             <div className="overflow-hidden rounded-2xl border border-border bg-surface-raised shadow-2xl shadow-black/40">
-              {/* Placeholder artwork */}
+              {/* Featured artwork */}
               <div className="relative aspect-[4/5] bg-surface-overlay">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-xl bg-border">
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="h-8 w-8 text-foreground-subtle"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={1.5}
-                      >
-                        <rect x="3" y="3" width="18" height="18" rx="2" />
-                        <circle cx="8.5" cy="8.5" r="1.5" />
-                        <path d="m21 15-5-5L5 21" />
-                      </svg>
-                    </div>
-                    <p className="text-xs text-foreground-subtle">Featured artwork</p>
-                  </div>
-                </div>
+                <ArtworkThumbnail
+                  artwork={{
+                    id: heroArtwork.id,
+                    image: heroArtwork.image,
+                    imageLarge: heroArtwork.imageLarge,
+                    title: heroArtwork.title,
+                    artist: heroArtwork.artist,
+                  }}
+                  sizes="(min-width: 1024px) 40vw, 90vw"
+                  priority
+                />
 
                 {/* Verified badge */}
-                <div className="absolute left-4 top-4 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5 backdrop-blur-sm">
+                <div className="pointer-events-none absolute left-4 top-4 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5 backdrop-blur-sm">
                   <CheckCircle2 size={12} className="text-gold" />
                   <span className="text-xs font-medium text-foreground">Verified Artist</span>
                 </div>

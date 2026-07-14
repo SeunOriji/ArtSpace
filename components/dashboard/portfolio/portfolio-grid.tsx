@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown, LayoutGrid, List, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { artworks } from "@/lib/artworks";
 import { WorkCard, type Work } from "./work-card";
 
 const works: Work[] = [
@@ -15,6 +16,8 @@ const works: Work[] = [
     price: 620_000,
     limited: { sold: 5, total: 20 },
     likes: 284,
+    image: artworks[20]?.image,
+    imageLarge: artworks[20]?.imageLarge,
     comments: [
       { id: "c1-1", author: "Tunde A.", authorInitials: "TA", text: "The light in this is incredible.", timeLabel: "2d ago" },
       { id: "c1-2", author: "Naomi K.", authorInitials: "NK", text: "Is this part of the Harmattan series?", timeLabel: "1d ago" },
@@ -27,6 +30,8 @@ const works: Work[] = [
     status: "for-sale",
     price: 1_200_000,
     likes: 412,
+    image: artworks[21]?.image,
+    imageLarge: artworks[21]?.imageLarge,
     comments: [
       { id: "c2-1", author: "Chidi O.", authorInitials: "CO", text: "This needs to be in a gallery.", timeLabel: "5h ago" },
     ],
@@ -38,6 +43,8 @@ const works: Work[] = [
     status: "sold",
     price: 480_000,
     likes: 156,
+    image: artworks[22]?.image,
+    imageLarge: artworks[22]?.imageLarge,
   },
   {
     id: "4",
@@ -47,6 +54,8 @@ const works: Work[] = [
     price: 250_000,
     priceLabel: "From",
     likes: 73,
+    image: artworks[23]?.image,
+    imageLarge: artworks[23]?.imageLarge,
   },
   {
     id: "5",
@@ -55,6 +64,8 @@ const works: Work[] = [
     status: "for-sale",
     price: 540_000,
     likes: 198,
+    image: artworks[24]?.image,
+    imageLarge: artworks[24]?.imageLarge,
   },
   {
     id: "6",
@@ -69,6 +80,8 @@ const works: Work[] = [
     status: "for-sale",
     price: 390_000,
     likes: 91,
+    image: artworks[25]?.image,
+    imageLarge: artworks[25]?.imageLarge,
   },
 ];
 

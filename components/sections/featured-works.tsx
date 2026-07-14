@@ -1,36 +1,22 @@
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
+import { artworks } from "@/lib/artworks";
+import { ArtworkThumbnail } from "@/components/artwork-lightbox";
 
-const works = [
-  {
-    id: "1",
-    title: "Harmattan Dusk",
-    artist: "Oluwaseun Adeyemi",
-    location: "Lagos, NG",
-    price: 620_000,
-    medium: "Oil on canvas · 90×120cm",
-    badge: "Verified",
-  },
-  {
-    id: "2",
-    title: "Reclaimed Throne",
-    artist: "Adaeze Okonkwo",
-    location: "Enugu, NG",
-    price: 1_200_000,
-    medium: "Mixed media · 100×100cm",
-    badge: "Featured",
-  },
-  {
-    id: "3",
-    title: "Lagos Lines",
-    artist: "Emeka Nwachukwu",
-    location: "Abuja, NG",
-    price: 250_000,
-    medium: "Photography prints · from",
-    badge: "New",
-    pricePrefix: "from ",
-  },
-];
+const badges = ["Verified", "Featured", "New"] as const;
+
+const works = artworks.slice(0, 3).map((a, i) => ({
+  id: a.id,
+  title: a.title,
+  artist: a.artist,
+  image: a.image,
+  imageLarge: a.imageLarge,
+  location: a.culture || a.year,
+  price: a.price,
+  medium: a.medium,
+  badge: badges[i],
+  pricePrefix: i === 2 ? "from " : undefined,
+}));
 
 function formatNGN(n: number) {
   return `₦${(n / 1000).toFixed(0)}k`;
@@ -61,24 +47,15 @@ export function FeaturedWorks() {
               key={work.id}
               className="group overflow-hidden rounded-2xl border border-border bg-surface transition-colors hover:border-border/80"
             >
-              {/* Artwork image placeholder */}
+              {/* Artwork image */}
               <div className="relative aspect-[4/5] bg-surface-overlay">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-12 w-12 text-border"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1}
-                  >
-                    <rect x="3" y="3" width="18" height="18" rx="2" />
-                    <circle cx="8.5" cy="8.5" r="1.5" />
-                    <path d="m21 15-5-5L5 21" />
-                  </svg>
-                </div>
+                <ArtworkThumbnail
+                  artwork={{ id: work.id, image: work.image, imageLarge: work.imageLarge, title: work.title, artist: work.artist }}
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                />
 
                 {/* Badge */}
-                <div className="absolute left-3 top-3">
+                <div className="pointer-events-none absolute left-3 top-3">
                   <span
                     className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
                       work.badge === "Verified"
@@ -101,10 +78,10 @@ export function FeaturedWorks() {
                     <p className="truncate font-heading text-base font-bold text-foreground">
                       {work.title}
                     </p>
-                    <p className="mt-0.5 text-xs text-foreground-muted">
-                      {work.artist} · {work.location}
+                    <p className="mt-0.5 truncate text-xs text-foreground-muted">
+                      {work.location ? `${work.artist} · ${work.location}` : work.artist}
                     </p>
-                    <p className="mt-1 text-xs text-foreground-subtle">{work.medium}</p>
+                    <p className="mt-1 truncate text-xs text-foreground-subtle">{work.medium}</p>
                   </div>
                   <div className="ml-3 shrink-0 text-right">
                     <p className="font-heading text-base font-bold text-gold">

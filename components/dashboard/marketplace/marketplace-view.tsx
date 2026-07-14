@@ -3,8 +3,10 @@
 import { useMemo, useState } from "react";
 import { BadgeCheck, ChevronDown, Heart, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { artworks, initialsFromName } from "@/lib/artworks";
+import { ArtworkThumbnail } from "@/components/artwork-lightbox";
 
-type Medium = "painting" | "sculpture" | "photography" | "textile" | "digital";
+type Medium = "african-art" | "painting" | "sculpture" | "textile" | "ceramics";
 type Tag = "limited" | "sale" | "commission" | "new";
 type Chip = "all" | "trending" | "new" | "limited" | "under200k" | "commission";
 type PriceRange = "all" | "under100k" | "100k-500k" | "500k-1m" | "1m+";
@@ -15,6 +17,8 @@ interface MarketplaceWork {
   title: string;
   artist: string;
   artistInitials: string;
+  image: string;
+  imageLarge: string;
   price: number;
   priceLabel?: string;
   medium: Medium;
@@ -25,20 +29,42 @@ interface MarketplaceWork {
   aspect: string;
 }
 
-const works: MarketplaceWork[] = [
-  { id: "1", title: "Harmattan Dusk", artist: "Tunde A.", artistInitials: "TA", price: 620_000, medium: "painting", tag: "limited", tagLabel: "Limited · 5/20", trending: true, aspect: "aspect-[1/1.2]" },
-  { id: "2", title: "Reclaimed Throne", artist: "Ngozi E.", artistInitials: "NE", price: 1_200_000, medium: "sculpture", tag: "sale", tagLabel: "For sale", trending: true, aspect: "aspect-square" },
-  { id: "3", title: "Lagos Lines", artist: "Kwame B.", artistInitials: "KB", price: 250_000, priceLabel: "From", medium: "digital", tag: "commission", tagLabel: "Commission", aspect: "aspect-[1/1.15]" },
-  { id: "4", title: "Ancestral Gold", artist: "Amara O.", artistInitials: "AO", price: 540_000, medium: "painting", tag: "sale", tagLabel: "For sale", aspect: "aspect-[1/0.95]" },
-  { id: "5", title: "Market Day", artist: "Femi O.", artistInitials: "FO", price: 390_000, medium: "painting", tag: "new", tagLabel: "New", isNew: true, aspect: "aspect-[1/1.1]" },
-  { id: "6", title: "Clay & Fire", artist: "Adaeze N.", artistInitials: "AN", price: 210_000, medium: "sculpture", tag: "sale", tagLabel: "For sale", aspect: "aspect-square" },
-  { id: "7", title: "Night Masquerade", artist: "Bola T.", artistInitials: "BT", price: 880_000, medium: "photography", tag: "limited", tagLabel: "Limited · 2/10", trending: true, aspect: "aspect-[1/1.2]" },
-  { id: "8", title: "River Memory", artist: "Chuka I.", artistInitials: "CI", price: 175_000, medium: "photography", tag: "sale", tagLabel: "For sale", aspect: "aspect-[1/0.9]" },
-  { id: "9", title: "Woven Spirits", artist: "Halima Y.", artistInitials: "HY", price: 95_000, medium: "textile", tag: "sale", tagLabel: "For sale", aspect: "aspect-square" },
-  { id: "10", title: "Sahel Horizon", artist: "Tunde A.", artistInitials: "TA", price: 460_000, medium: "painting", tag: "new", tagLabel: "New", isNew: true, aspect: "aspect-[1/1.1]" },
-  { id: "11", title: "Bronze Memory", artist: "Ngozi E.", artistInitials: "NE", price: 150_000, priceLabel: "From", medium: "sculpture", tag: "commission", tagLabel: "Commission", aspect: "aspect-[1/0.95]" },
-  { id: "12", title: "Indigo Cloth", artist: "Halima Y.", artistInitials: "HY", price: 68_000, medium: "textile", tag: "sale", tagLabel: "For sale", trending: true, aspect: "aspect-[1/1.2]" },
+const ASPECTS = [
+  "aspect-[1/1.2]",
+  "aspect-square",
+  "aspect-[1/1.15]",
+  "aspect-[1/0.95]",
+  "aspect-[1/1.1]",
+  "aspect-[1/0.9]",
 ];
+
+function deriveTag(index: number): { tag: Tag; tagLabel: string } {
+  const mod = index % 6;
+  if (mod === 0) return { tag: "limited", tagLabel: `Limited · ${(index % 18) + 2}/20` };
+  if (mod === 1) return { tag: "commission", tagLabel: "Commission" };
+  if (mod === 2) return { tag: "new", tagLabel: "New" };
+  return { tag: "sale", tagLabel: "For sale" };
+}
+
+const works: MarketplaceWork[] = artworks.map((a, i) => {
+  const { tag, tagLabel } = deriveTag(i);
+  return {
+    id: a.id,
+    title: a.title,
+    artist: a.artist,
+    artistInitials: initialsFromName(a.artist),
+    image: a.image,
+    imageLarge: a.imageLarge,
+    price: a.price,
+    priceLabel: tag === "commission" ? "From" : undefined,
+    medium: a.category as Medium,
+    tag,
+    tagLabel,
+    trending: i % 5 === 0,
+    isNew: tag === "new",
+    aspect: ASPECTS[i % ASPECTS.length],
+  };
+});
 
 const chips: { key: Chip; label: string }[] = [
   { key: "all", label: "All works" },
@@ -49,13 +75,21 @@ const chips: { key: Chip; label: string }[] = [
   { key: "commission", label: "Commissions open" },
 ];
 
-const mediumFilters: { key: Medium; label: string; count: number }[] = [
-  { key: "painting", label: "Painting", count: 412 },
-  { key: "sculpture", label: "Sculpture", count: 96 },
-  { key: "photography", label: "Photography", count: 154 },
-  { key: "textile", label: "Textile & craft", count: 73 },
-  { key: "digital", label: "Digital", count: 61 },
-];
+const mediumLabels: Record<Medium, string> = {
+  "african-art": "African art",
+  painting: "Painting",
+  sculpture: "Sculpture",
+  textile: "Textile & craft",
+  ceramics: "Ceramics",
+};
+
+const mediumFilters: { key: Medium; label: string; count: number }[] = (
+  Object.keys(mediumLabels) as Medium[]
+).map((key) => ({
+  key,
+  label: mediumLabels[key],
+  count: works.filter((w) => w.medium === key).length,
+}));
 
 const priceFilters: { key: PriceRange; label: string }[] = [
   { key: "under100k", label: "Under 100k" },
@@ -294,7 +328,11 @@ export function MarketplaceView() {
                     w.aspect
                   )}
                 >
-                  <span className={cn("absolute left-2.5 top-2.5 rounded-full border border-border-subtle bg-background/85 px-2.5 py-1 text-[10px] font-bold", tagColor[w.tag])}>
+                  <ArtworkThumbnail
+                    artwork={{ id: w.id, image: w.image, imageLarge: w.imageLarge, title: w.title, artist: w.artist }}
+                    sizes="(min-width: 1024px) 22vw, (min-width: 640px) 30vw, 45vw"
+                  />
+                  <span className={cn("pointer-events-none absolute left-2.5 top-2.5 rounded-full border border-border-subtle bg-background/85 px-2.5 py-1 text-[10px] font-bold", tagColor[w.tag])}>
                     {w.tagLabel}
                   </span>
                   <button

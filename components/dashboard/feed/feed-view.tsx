@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { ArtworkThumbnail } from "@/components/artwork-lightbox";
 import {
   BadgeCheck,
   Camera,
@@ -14,6 +16,7 @@ import {
   Share2,
 } from "lucide-react";
 import { cn, formatNumber } from "@/lib/utils";
+import { artworks } from "@/lib/artworks";
 import { useInteractionsStore, type WorkComment } from "@/store/interactions.store";
 import { WorkCommentsModal } from "@/components/dashboard/portfolio/work-comments-modal";
 
@@ -31,7 +34,10 @@ interface FeedPost {
   likes: number;
   comments?: WorkComment[];
   suggested?: boolean;
-  // sale
+  // process / sale / reel
+  image?: string;
+  imageLarge?: string;
+  // sale / process
   workTitle?: string;
   price?: number;
   // process
@@ -70,6 +76,9 @@ const posts: FeedPost[] = [
     likes: 248,
     comments: [],
     slideCount: 4,
+    workTitle: "Harmattan Dusk",
+    image: artworks[3]?.image,
+    imageLarge: artworks[3]?.imageLarge,
   },
   {
     id: "feed-2",
@@ -83,6 +92,8 @@ const posts: FeedPost[] = [
     comments: [],
     workTitle: "Reclaimed Throne",
     price: 1_200_000,
+    image: artworks[7]?.image,
+    imageLarge: artworks[7]?.imageLarge,
   },
   {
     id: "feed-3",
@@ -94,6 +105,7 @@ const posts: FeedPost[] = [
     likes: 1_200,
     comments: [],
     duration: "0:30",
+    image: artworks[11]?.image,
   },
   {
     id: "feed-4",
@@ -118,6 +130,8 @@ const posts: FeedPost[] = [
     workTitle: "Drumline",
     price: 340_000,
     suggested: true,
+    image: artworks[15]?.image,
+    imageLarge: artworks[15]?.imageLarge,
   },
 ];
 
@@ -169,10 +183,22 @@ function PostCard({ post }: { post: FeedPost }) {
 
       {post.kind === "process" && (
         <div className="relative mt-3.5 aspect-[16/11] overflow-hidden rounded-xl border border-border bg-gradient-to-br from-surface-overlay to-surface-raised">
-          <span className="absolute left-3 top-3 rounded-full border border-border-subtle bg-background/85 px-3 py-1 text-[11px] font-bold text-gold">
+          {post.image && (
+            <ArtworkThumbnail
+              artwork={{
+                id: post.id,
+                image: post.image,
+                imageLarge: post.imageLarge ?? post.image,
+                title: post.workTitle ?? post.author,
+                artist: post.author,
+              }}
+              sizes="(min-width: 1024px) 640px, 90vw"
+            />
+          )}
+          <span className="pointer-events-none absolute left-3 top-3 rounded-full border border-border-subtle bg-background/85 px-3 py-1 text-[11px] font-bold text-gold">
             Process · 1/{post.slideCount}
           </span>
-          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+          <div className="pointer-events-none absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
             {Array.from({ length: post.slideCount ?? 0 }).map((_, i) => (
               <span
                 key={i}
@@ -185,6 +211,18 @@ function PostCard({ post }: { post: FeedPost }) {
 
       {post.kind === "sale" && (
         <div className="relative mt-3.5 aspect-[4/3] overflow-hidden rounded-xl border border-border bg-gradient-to-br from-surface-overlay to-surface-raised">
+          {post.image && (
+            <ArtworkThumbnail
+              artwork={{
+                id: post.id,
+                image: post.image,
+                imageLarge: post.imageLarge ?? post.image,
+                title: post.workTitle ?? post.author,
+                artist: post.author,
+              }}
+              sizes="(min-width: 1024px) 640px, 90vw"
+            />
+          )}
           <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 bg-gradient-to-t from-background/95 to-transparent p-4">
             <div className="min-w-0">
               <p className="truncate font-heading text-base font-extrabold text-foreground">{post.workTitle}</p>
@@ -202,6 +240,9 @@ function PostCard({ post }: { post: FeedPost }) {
 
       {post.kind === "reel" && (
         <div className="relative mt-3.5 h-44 w-44 overflow-hidden rounded-xl border border-border bg-gradient-to-br from-surface-overlay to-surface-raised">
+          {post.image && (
+            <Image src={post.image} alt={post.caption} fill sizes="176px" className="object-cover" />
+          )}
           <span className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-full bg-background/85 px-2 py-0.5 text-[10px] font-bold text-foreground">
             <Play size={9} className="text-accent" fill="currentColor" />
             REEL

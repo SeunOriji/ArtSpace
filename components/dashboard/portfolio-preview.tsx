@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { artworks as allArtworks } from "@/lib/artworks";
+import { ArtworkThumbnail } from "@/components/artwork-lightbox";
 
 const artworks = [
   {
     id: "1",
     label: "Work 01",
+    image: allArtworks[20]?.image,
+    imageLarge: allArtworks[20]?.imageLarge,
   },
 ];
 
@@ -26,8 +30,14 @@ export function PortfolioPreview() {
             key={art.id}
             className="relative aspect-square overflow-hidden rounded-xl bg-gradient-to-br from-surface-overlay to-surface-raised"
           >
-            <div className="absolute inset-0 flex items-end p-2">
-              <span className="text-[10px] font-semibold text-foreground-muted">{art.label}</span>
+            {art.image && (
+              <ArtworkThumbnail
+                artwork={{ id: art.id, image: art.image, imageLarge: art.imageLarge ?? art.image, title: art.label }}
+                sizes="120px"
+              />
+            )}
+            <div className="pointer-events-none absolute inset-0 flex items-end bg-gradient-to-t from-background/70 to-transparent p-2">
+              <span className="text-[10px] font-semibold text-foreground">{art.label}</span>
             </div>
           </div>
         ))}

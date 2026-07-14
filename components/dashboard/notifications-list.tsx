@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Check, Heart, MessageCircle, Share2, Tag, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -90,7 +91,11 @@ function NotificationRow({ notification }: { notification: Notification }) {
         </button>
       ) : (
         notification.thumbnail && (
-          <span className="h-11 w-11 flex-shrink-0 rounded-xl border border-border bg-gradient-to-br from-surface-overlay to-surface-raised" />
+          <span className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-xl border border-border bg-gradient-to-br from-surface-overlay to-surface-raised">
+            {notification.image && (
+              <Image src={notification.image} alt="" fill sizes="44px" className="object-cover" />
+            )}
+          </span>
         )
       )}
     </div>
