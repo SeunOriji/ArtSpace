@@ -15,7 +15,7 @@ const leftNavItems = [
 const rightNavItems = [
   { label: "Chats", href: "/dashboard/messages", icon: MessageCircle },
   { label: "Studio", href: "/dashboard/portfolio", icon: Layers },
-  { label: "Events", href: "/events", icon: CalendarDays },
+  { label: "Events", href: "/dashboard/events", icon: CalendarDays },
 ];
 
 export function BottomNav() {

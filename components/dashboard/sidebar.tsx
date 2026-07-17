@@ -30,7 +30,7 @@ const navItems = [
   { label: "Messages", href: "/dashboard/messages", icon: MessageCircle },
   { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { label: "Commissions", href: "/dashboard/commissions", icon: Palette },
-  { label: "Events", href: "/events", icon: CalendarDays },
+  { label: "Events", href: "/dashboard/events", icon: CalendarDays },
   { label: "Analytics", href: "/dashboard/analytics", icon: BarChart2 },
 ];
 
