@@ -13,9 +13,11 @@ interface InteractionsState {
   likedWorkIds: Record<string, boolean>;
   commentsByWork: Record<string, WorkComment[]>;
   reportedWorkIds: Record<string, boolean>;
+  savedWorkIds: Record<string, boolean>;
   toggleLike: (workId: string) => void;
   addComment: (workId: string, text: string) => void;
   reportWork: (workId: string) => void;
+  toggleSave: (workId: string) => void;
 }
 
 export const useInteractionsStore = create<InteractionsState>()(
@@ -24,6 +26,7 @@ export const useInteractionsStore = create<InteractionsState>()(
       likedWorkIds: {},
       commentsByWork: {},
       reportedWorkIds: {},
+      savedWorkIds: {},
       toggleLike: (workId) =>
         set((s) => ({ likedWorkIds: { ...s.likedWorkIds, [workId]: !s.likedWorkIds[workId] } })),
       addComment: (workId, text) =>
@@ -43,6 +46,8 @@ export const useInteractionsStore = create<InteractionsState>()(
           };
         }),
       reportWork: (workId) => set((s) => ({ reportedWorkIds: { ...s.reportedWorkIds, [workId]: true } })),
+      toggleSave: (workId) =>
+        set((s) => ({ savedWorkIds: { ...s.savedWorkIds, [workId]: !s.savedWorkIds[workId] } })),
     }),
     { name: "artspace-interactions", skipHydration: true }
   )

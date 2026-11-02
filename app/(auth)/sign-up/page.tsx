@@ -29,7 +29,7 @@ export default function SignUpPage() {
       "mock-token"
     );
 
-    router.push(role === "artist" ? "/dashboard" : "/marketplace");
+    router.push(role === "artist" ? "/dashboard" : "/collector");
   }
 
   return (
