@@ -52,7 +52,6 @@ export function SubmitEventForm() {
     { id: nextTierId(), name: "Student", price: "2500", available: "100" },
   ]);
 
-  const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
 
   useEffect(() => {
@@ -64,7 +63,6 @@ export function SubmitEventForm() {
   function handleBannerChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null;
     if (bannerPreview) URL.revokeObjectURL(bannerPreview);
-    setBannerFile(file);
     setBannerPreview(file ? URL.createObjectURL(file) : null);
   }
 
