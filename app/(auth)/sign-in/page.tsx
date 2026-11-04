@@ -4,11 +4,13 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
+import { createId } from "@/lib/utils";
 
 export default function SignInPage() {
   const router = useRouter();
   const setUser = useAuthStore((s) => s.setUser);
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"artist" | "collector">("artist");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -17,17 +19,17 @@ export default function SignInPage() {
 
     setUser(
       {
-        id: crypto.randomUUID(),
+        id: createId(),
         name: email.split("@")[0],
         email,
-        role: "collector",
+        role,
         isVerified: false,
         plan: "free",
       },
       "mock-token"
     );
 
-    router.push("/dashboard/feed");
+    router.push(role === "artist" ? "/dashboard" : "/collector");
   }
 
   return (
@@ -72,6 +74,34 @@ export default function SignInPage() {
               className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground placeholder-foreground-subtle outline-none transition focus:border-accent"
               placeholder="••••••••"
             />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-medium text-foreground-muted">Sign in as:</p>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-border bg-surface p-3 text-sm font-medium text-foreground-muted transition hover:border-accent hover:text-foreground has-[:checked]:border-accent has-[:checked]:bg-accent/10 has-[:checked]:text-foreground">
+                <input
+                  type="radio"
+                  name="role"
+                  value="artist"
+                  className="sr-only"
+                  checked={role === "artist"}
+                  onChange={() => setRole("artist")}
+                />
+                Artist
+              </label>
+              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-border bg-surface p-3 text-sm font-medium text-foreground-muted transition hover:border-accent hover:text-foreground has-[:checked]:border-accent has-[:checked]:bg-accent/10 has-[:checked]:text-foreground">
+                <input
+                  type="radio"
+                  name="role"
+                  value="collector"
+                  className="sr-only"
+                  checked={role === "collector"}
+                  onChange={() => setRole("collector")}
+                />
+                Collector
+              </label>
+            </div>
           </div>
 
           <button

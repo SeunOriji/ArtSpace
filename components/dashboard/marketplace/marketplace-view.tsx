@@ -1,10 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BadgeCheck, ChevronDown, Heart, Search } from "lucide-react";
+import Link from "next/link";
+import { BadgeCheck, Check, ChevronDown, Heart, Search, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { artworks, initialsFromName } from "@/lib/artworks";
 import { ArtworkThumbnail } from "@/components/artwork-lightbox";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  CartPanel,
+  cartTotals,
+  itemCountLabel,
+  useCartItems,
+  useIsInCart,
+} from "@/components/collector/marketplace/cart-panel";
+import { formatNaira } from "@/lib/collector-works";
+import { useCartStore } from "@/store/cart.store";
 
 type Medium = "african-art" | "painting" | "sculpture" | "textile" | "ceramics";
 type Tag = "limited" | "sale" | "commission" | "new";
@@ -26,17 +37,7 @@ interface MarketplaceWork {
   tagLabel: string;
   trending?: boolean;
   isNew?: boolean;
-  aspect: string;
 }
-
-const ASPECTS = [
-  "aspect-[1/1.2]",
-  "aspect-square",
-  "aspect-[1/1.15]",
-  "aspect-[1/0.95]",
-  "aspect-[1/1.1]",
-  "aspect-[1/0.9]",
-];
 
 function deriveTag(index: number): { tag: Tag; tagLabel: string } {
   const mod = index % 6;
@@ -62,7 +63,6 @@ const works: MarketplaceWork[] = artworks.map((a, i) => {
     tagLabel,
     trending: i % 5 === 0,
     isNew: tag === "new",
-    aspect: ASPECTS[i % ASPECTS.length],
   };
 });
 
@@ -116,6 +116,53 @@ function formatNGN(n: number) {
   return n >= 1_000_000 ? `₦${(n / 1_000_000).toFixed(1)}M` : `₦${Math.round(n / 1000)}k`;
 }
 
+function CartButton({ work }: { work: MarketplaceWork }) {
+  const inCart = useIsInCart(work.id);
+  const toggleItem = useCartStore((s) => s.toggleItem);
+
+  if (work.tag === "commission") {
+    return (
+      <Link
+        href="/dashboard/messages"
+        className="flex w-full items-center justify-center rounded-lg border border-border-subtle py-2 text-xs font-bold text-foreground-muted transition-colors hover:text-foreground"
+      >
+        Enquire about commission
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() =>
+        toggleItem({
+          id: work.id,
+          title: work.title,
+          artist: work.artist,
+          mediumLabel: mediumLabels[work.medium] ?? "Original work",
+          price: work.price,
+          image: work.image,
+          edition: work.tag === "limited" ? `Limited edition · ${work.tagLabel.replace("Limited · ", "")}` : "Original · 1 of 1",
+        })
+      }
+      aria-pressed={inCart}
+      className={cn(
+        "flex w-full items-center justify-center gap-1.5 rounded-lg border border-accent py-2 text-xs font-bold transition-colors",
+        inCart ? "bg-surface-raised text-foreground hover:bg-surface-overlay" : "bg-accent text-white hover:bg-accent-hover"
+      )}
+    >
+      {inCart ? (
+        <>
+          <Check size={13} />
+          In cart<span className="hidden sm:inline"> · Remove</span>
+        </>
+      ) : (
+        "Add to cart"
+      )}
+    </button>
+  );
+}
+
 function inPriceRange(price: number, range: PriceRange) {
   switch (range) {
     case "under100k":
@@ -140,6 +187,9 @@ export function MarketplaceView() {
   const [sortOpen, setSortOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(8);
   const [savedIds, setSavedIds] = useState<Record<string, boolean>>({});
+  const [cartOpen, setCartOpen] = useState(false);
+  const cartItems = useCartItems();
+  const { total: cartTotal } = cartTotals(cartItems);
 
   function toggleSaved(id: string) {
     setSavedIds((s) => ({ ...s, [id]: !s[id] }));
@@ -232,17 +282,30 @@ export function MarketplaceView() {
       </aside>
 
       {/* Main content */}
-      <div className="min-w-0">
-        {/* Search */}
-        <div className="relative mb-6 max-w-md">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-subtle" />
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search works, artists, styles…"
-            className="w-full rounded-xl border border-border bg-surface py-2.5 pl-9 pr-4 text-sm text-foreground placeholder-foreground-subtle outline-none transition focus:border-accent"
-          />
+      <div className={cn("min-w-0", cartItems.length > 0 && "pb-24 lg:pb-0")}>
+        {/* Search + cart */}
+        <div className="mb-6 flex items-center gap-3">
+          <div className="relative max-w-md flex-1">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-subtle" />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search works, artists, styles…"
+              className="w-full rounded-xl border border-border bg-surface py-2.5 pl-9 pr-4 text-sm text-foreground placeholder-foreground-subtle outline-none transition focus:border-accent"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setCartOpen(true)}
+            className="ml-auto flex flex-shrink-0 items-center gap-2 rounded-xl border border-accent bg-surface-raised px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-surface-overlay"
+          >
+            <ShoppingCart size={16} />
+            <span className="hidden sm:inline">Cart</span>
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 font-heading text-[11px] font-extrabold text-white">
+              {cartItems.length}
+            </span>
+          </button>
         </div>
 
         {/* Hero */}
@@ -321,11 +384,10 @@ export function MarketplaceView() {
         ) : (
           <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
             {visible.map((w) => (
-              <div key={w.id} className="flex flex-col gap-2.5">
+              <div key={w.id} className="flex h-full min-w-0 flex-col gap-2.5">
                 <div
                   className={cn(
-                    "relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-surface-overlay to-surface-raised",
-                    w.aspect
+                    "relative aspect-[1/1.1] overflow-hidden rounded-xl border border-border bg-gradient-to-br from-surface-overlay to-surface-raised"
                   )}
                 >
                   <ArtworkThumbnail
@@ -356,6 +418,9 @@ export function MarketplaceView() {
                   {w.artist}
                   <BadgeCheck size={13} className="text-gold" />
                 </div>
+                <div className="mt-auto pt-1">
+                  <CartButton work={w} />
+                </div>
               </div>
             ))}
           </div>
@@ -373,6 +438,33 @@ export function MarketplaceView() {
           </div>
         )}
       </div>
+
+      {/* Mobile cart bar */}
+      {cartItems.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setCartOpen(true)}
+          className="fixed inset-x-3 bottom-[76px] z-40 flex items-center justify-between rounded-2xl bg-accent px-4 py-3 text-left text-white shadow-lg shadow-accent/30 lg:hidden"
+        >
+          <span>
+            <span className="block text-[11px] font-bold">{itemCountLabel(cartItems.length)} in cart</span>
+            <span className="block font-heading text-base font-extrabold">{formatNaira(cartTotal)}</span>
+          </span>
+          <span className="rounded-lg bg-background px-4 py-2.5 text-xs font-extrabold text-foreground">View cart →</span>
+        </button>
+      )}
+
+      {/* Cart slide-over */}
+      <Dialog open={cartOpen} onOpenChange={setCartOpen}>
+        <DialogContent
+          showClose={false}
+          aria-describedby={undefined}
+          className="sm:inset-y-0 sm:left-auto sm:right-0 sm:top-0 sm:h-full sm:max-h-none sm:max-w-md sm:translate-x-0 sm:translate-y-0 sm:rounded-none sm:border-y-0 sm:border-r-0"
+        >
+          <DialogTitle className="sr-only">Your cart</DialogTitle>
+          <CartPanel onClose={() => setCartOpen(false)} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -8,6 +8,8 @@ import { useNotificationsStore } from "@/store/notifications.store";
 import { useCommissionsStore } from "@/store/commissions.store";
 import { useInteractionsStore } from "@/store/interactions.store";
 import { useMessagesStore } from "@/store/messages.store";
+import { useCartStore } from "@/store/cart.store";
+import { useOrdersStore } from "@/store/orders.store";
 import { LightboxProvider } from "@/components/artwork-lightbox";
 
 // These stores persist to localStorage with `skipHydration: true`, so their
@@ -21,6 +23,8 @@ function useRehydratePersistedStores() {
     useCommissionsStore.persist.rehydrate();
     useInteractionsStore.persist.rehydrate();
     useMessagesStore.persist.rehydrate();
+    useCartStore.persist.rehydrate();
+    useOrdersStore.persist.rehydrate();
   }, []);
 }
 

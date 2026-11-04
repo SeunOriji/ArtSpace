@@ -23,3 +23,11 @@ export function formatNumber(n: number): string {
   if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
   return n.toString();
 }
+
+/** Unique id that also works outside secure contexts (crypto.randomUUID is only defined on HTTPS/localhost). */
+export function createId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
